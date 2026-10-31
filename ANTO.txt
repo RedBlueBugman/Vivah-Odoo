@@ -1,0 +1,484 @@
+================================================================================
+ PERSON 4 — DAY-OF & DASHBOARD ENGINEER
+ OWNS: Module 5 (Day-Of Live Command Center) + Module 6 (Founder Dashboard)
+================================================================================
+
+YOUR ROLE IN THE TEAM:
+You own the two most visually dramatic features for the demo:
+  1. The Live Day-Of Command Center — the feature that doesn't exist anywhere
+     in the world. Judges will stop and stare at this.
+  2. The Founder Dashboard — the "so what" moment of the demo. Shows the
+     founder everything they've never been able to see before.
+
+You are the least blocked person in the team because your modules primarily
+READ data that others create. You build against mocks from hour 2, and swap
+in real API calls progressively as P1/P2/P3 finish their work.
+
+The Day-Of Command Center needs one special technical thing: REAL-TIME FEEL.
+Events need to feel live. We achieve this with polling every 5 seconds — not
+true WebSockets (too complex for 48 hours). It must FEEL real-time even if
+it's technically polling.
+
+================================================================================
+ YOUR FILE STRUCTURE — YOU OWN THESE
+================================================================================
+
+vivah/
+├── app/
+│   ├── api/
+│   │   ├── timeline/
+│   │   │   ├── route.ts              ← GET + POST timeline events
+│   │   │   └── [weddingId]/
+│   │   │       └── route.ts          ← GET all events for a wedding
+│   │   │
+│   │   ├── checkin/
+│   │   │   └── [eventId]/
+│   │   │       └── route.ts          ← POST check in a vendor for an event
+│   │   │
+│   │   ├── flags/
+│   │   │   ├── route.ts              ← POST raise a problem flag
+│   │   │   └── [weddingId]/
+│   │   │       └── route.ts          ← GET all active flags for a wedding
+│   │   │
+│   │   └── dashboard/
+│   │       └── season/
+│   │           └── route.ts          ← GET full season overview data
+│   │
+│   ├── day-of/
+│   │   └── [weddingId]/
+│   │       └── page.tsx              ← FULL SCREEN Live Command Center
+│   │
+│   └── dashboard/
+│       └── page.tsx                  ← Founder Season Dashboard
+│
+├── components/
+│   ├── dayof/                        ← YOUR DAY-OF COMPONENTS
+│   │   ├── DayOfPanel.tsx            ← EXPORTED PANEL for P1's hub page (compact view)
+│   │   ├── LiveSchedule.tsx          ← Full command center view
+│   │   ├── EventRow.tsx              ← Single event row with check-in button
+│   │   ├── VendorCheckInButton.tsx   ← The check-in button with status
+│   │   ├── LateAlert.tsx             ← The red alert banner for late vendors
+│   │   ├── ProblemFlagCard.tsx       ← Card showing a raised problem flag
+│   │   ├── AddEventForm.tsx          ← Form to add event to schedule
+│   │   └── TimelineBuilder.tsx       ← Pre-event schedule builder
+│   │
+│   └── dashboard/                    ← YOUR DASHBOARD COMPONENTS
+│       ├── SeasonOverview.tsx         ← Top metrics row (KPI cards)
+│       ├── WeddingTable.tsx           ← All weddings table with P&L
+│       ├── UpcomingPayments.tsx       ← Collect + Pay in next 30 days
+│       └── VendorLeaderboard.tsx      ← Top/bottom vendor performance
+│
+└── lib/
+    └── api/
+        ├── dayof.ts                   ← Client-side fetch for day-of data
+        └── dashboard.ts               ← Client-side fetch for dashboard data
+
+================================================================================
+ YOUR DATABASE TABLES — DEFINE THESE AND GIVE TO PERSON 1 BY HOUR 1
+================================================================================
+
+  model TimelineEvent {
+    id              String          @id @default(cuid())
+    weddingId       String
+    wedding         Wedding         @relation(...)
+    functionId      String?
+    function        WeddingFunction? @relation(...)
+    scheduledTime   DateTime
+    eventName       String
+    description     String?
+    vendorId        String?
+    vendor          Vendor?         @relation(...)
+    responsibleUser String?         (planner name or ID)
+    location        String?
+    estimatedDuration Int?          (in minutes)
+    status          EventStatus     @default(UPCOMING)
+    actualStartTime DateTime?
+    actualEndTime   DateTime?
+    checkIn         VendorCheckIn?
+    createdAt       DateTime        @default(now())
+  }
+
+  enum EventStatus { UPCOMING IN_PROGRESS DONE DELAYED CANCELLED }
+
+  model VendorCheckIn {
+    id              String        @id @default(cuid())
+    eventId         String        @unique
+    event           TimelineEvent @relation(...)
+    vendorId        String
+    vendor          Vendor        @relation(...)
+    checkedInAt     DateTime
+    checkedInBy     String        (planner name)
+    minutesLate     Int           (computed: checkedInAt - event.scheduledTime)
+    notes           String?
+  }
+
+  model ProblemFlag {
+    id          String        @id @default(cuid())
+    weddingId   String
+    wedding     Wedding       @relation(...)
+    raisedBy    String
+    description String
+    severity    Severity      @default(MEDIUM)
+    status      FlagStatus    @default(OPEN)
+    resolvedBy  String?
+    resolvedAt  DateTime?
+    createdAt   DateTime      @default(now())
+  }
+
+  enum Severity  { LOW MEDIUM HIGH CRITICAL }
+  enum FlagStatus { OPEN ACKNOWLEDGED RESOLVED }
+
+================================================================================
+ YOUR API ENDPOINTS — BUILD AND DOCUMENT THESE
+================================================================================
+
+GET  /api/timeline/:weddingId
+  Returns: All TimelineEvents for this wedding, sorted by scheduledTime,
+           including vendor name, checkIn status, and minutesLate if checked in
+  Called by: Your LiveSchedule component (polled every 5 seconds)
+
+POST /api/timeline/events
+  Body: weddingId, functionId, scheduledTime, eventName, description,
+        vendorId, responsibleUser, location, estimatedDuration
+  Returns: Created TimelineEvent
+
+POST /api/checkin/:eventId
+  Body: checkedInBy, notes
+  Logic:
+    → Get the event's scheduledTime
+    → Compute minutesLate = Math.max(0, now - scheduledTime in minutes)
+    → Create VendorCheckIn record
+    → Update TimelineEvent status to IN_PROGRESS
+  Returns: Created VendorCheckIn with minutesLate
+
+POST /api/flags
+  Body: weddingId, raisedBy, description, severity
+  Returns: Created ProblemFlag
+
+GET  /api/flags/:weddingId
+  Returns: All open/acknowledged flags for this wedding
+  Called by: Your LiveSchedule component (polled every 5 seconds)
+
+PATCH /api/timeline/events/:id
+  Body: status, actualStartTime, actualEndTime, scheduledTime (for adjustments)
+  Returns: Updated event
+
+GET  /api/dashboard/season
+  Logic:
+    → Fetch all weddings with their status
+    → For each wedding, call getWeddingFinancialSummary() from P3's lib/payments.ts
+    → Fetch all upcoming PaymentMilestones due in next 30 days
+    → Fetch all upcoming VendorPaymentTranches due in next 30 days
+    → Fetch vendor performance (avg rating, wedding count per vendor)
+    → Fetch open tasks with status OVERDUE (past dueDate, not DONE)
+  Returns:
+    {
+      totalWeddings,
+      statusBreakdown: { BOOKED: n, PLANNING: n, EXECUTION: n, COMPLETED: n },
+      totalRevenue,
+      totalCollected,
+      totalVendorCosts,
+      totalPaidOut,
+      netMargin,
+      weddings: [...weddingWithPnL],
+      upcomingCollections: [...milestonesNext30Days],
+      upcomingPayouts: [...tranchesNext30Days],
+      vendorLeaderboard: [...vendorsWithRating],
+      openIssues: { overdueTasks: n, overduePayments: n }
+    }
+
+================================================================================
+ YOUR FRONTEND PAGES + COMPONENTS — BUILD THESE
+================================================================================
+
+PAGE 1: /dashboard (Founder Season Dashboard)
+
+  This is a desktop-first page. Founders sit at desks.
+  Layout: Full-width with multiple sections
+
+  SECTION 1: Season KPI Cards (top row, 4 cards)
+    Card 1: Total Weddings (breakdown by status)
+    Card 2: Total Revenue (contracted vs. collected %)
+    Card 3: Total Vendor Costs (total vs. paid %)
+    Card 4: Season Net Profit (projected — and whether up or down vs. last month)
+    Data: From GET /api/dashboard/season
+
+  SECTION 2: Wedding Table
+    Title: "All Weddings This Season"
+    Columns: Wedding | Date | Status | Budget | Collected | Vendor Paid | Net Profit | Cash Position
+    Colors: Cash Position is RED if negative (agency is out of pocket for that wedding)
+    Net Profit is GREEN if positive, RED if negative
+    Sortable by: Date, Budget, Net Profit
+    Clickable row: Navigates to /weddings/[id]
+
+  SECTION 3: Upcoming Payments (2-column layout)
+    LEFT COLUMN: "You Need to Collect (Next 30 Days)"
+      Table: Wedding | Milestone | Amount | Due Date
+      Sorted by due date (most urgent first)
+      Overdue rows: red background
+    RIGHT COLUMN: "You Need to Pay Vendors (Next 30 Days)"
+      Table: Wedding | Vendor | Tranche | Amount | Due Date
+      Sorted by due date (most urgent first)
+      Overdue rows: red background
+
+  SECTION 4: Vendor Performance
+    Title: "Vendor Performance"
+    Top 5 vendors: ranked by average rating — show name, category, rating, wedding count
+    Any vendor below 3.5 stars: flagged with amber "Review Required" tag
+
+PAGE 2: /day-of/[weddingId] (Full-Screen Live Command Center)
+
+  This is a MOBILE-FIRST page. Planners use phones at venues.
+  BUT also looks great on tablet and desktop for the demo.
+
+  TOP BAR (fixed):
+    → Wedding name (Sharma-Gupta Wedding)
+    → Today's date + current time (live, updates every second using setInterval)
+    → Current function tab (MEHENDI | SANGEET | WEDDING | RECEPTION)
+    → "Raise Problem" button (red, prominent)
+
+  LATE ALERT BANNER (appears below top bar when vendor is late):
+    → Full-width red banner: "⚠️ DJ Ravish was expected at 09:00.
+      It is 09:35. Not yet checked in."
+    → Dismissible per alert, but if another vendor is late, it reappears
+    → Multiple late vendors: stack alerts
+
+  SCHEDULE LIST (main content):
+    Each event is a row with:
+    LEFT:  Time (scheduled) | Event name | Location
+    RIGHT: Vendor name | STATUS BUTTON
+
+    STATUS BUTTON states:
+      → UPCOMING (grey, disabled — vendor not due yet)
+      → CHECK IN (amber, clickable — vendor is due soon or past due)
+      → ✅ ON TIME (green, disabled — checked in within 15 min of schedule)
+      → ⚠️ LATE: 22 MIN (amber, disabled — checked in but was late)
+      → 🔴 NOT ARRIVED: 35 MIN LATE (red, still clickable for check-in)
+
+    "Check In" click:
+      → POST /api/checkin/:eventId
+      → Button immediately shows "✅ Checked In" (optimistic update)
+      → Server confirms and stores minutesLate
+
+    Events that are DONE (past and checked):
+      → Greyed out, moved to bottom or collapsed
+
+    Events IN PROGRESS:
+      → Top of list, highlighted with a left border in primary color
+
+  PROBLEM FLAGS PANEL (bottom sheet or sidebar):
+    Shows all active problem flags
+    Each flag: severity badge, description, who raised it, time raised
+    "Acknowledge" and "Resolve" buttons per flag
+
+  POLLING LOGIC:
+    → Every 5 seconds: fetch /api/timeline/:weddingId + /api/flags/:weddingId
+    → Compare with current state
+    → If a new late vendor detected: show alert banner
+    → If a flag was resolved: remove it from panel
+    → This gives real-time feel without WebSockets
+
+COMPONENT: DayOfPanel.tsx ← EXPORTED TO P1'S HUB PAGE (compact version)
+  Props: weddingId: string
+  A compact version of the command center for the wedding hub tab
+  Shows: Today's schedule in a list (if it's not today: the next upcoming function)
+  Shows: Quick check-in status summary (5 arrived, 2 pending, 1 late)
+  "Open Live View" button → navigates to /day-of/[weddingId] (full screen)
+
+COMPONENT: TimelineBuilder.tsx (for building the schedule, pre-event)
+  This is used by planners 1 week before the wedding to create the schedule
+  A list of events with Add/Edit/Delete
+  Each event: time picker, event name, vendor select (from WeddingVendor),
+              location, duration, responsible planner
+  "Save Schedule" button → saves all events to DB
+
+================================================================================
+ REAL-TIME POLLING ARCHITECTURE
+================================================================================
+
+The day-of page uses polling. Here is exactly how to implement it:
+
+  In your LiveSchedule component:
+
+    useEffect(() => {
+      const fetchLiveData = async () => {
+        const events = await fetch(`/api/timeline/${weddingId}`).then(r => r.json())
+        const flags = await fetch(`/api/flags/${weddingId}`).then(r => r.json())
+        setEvents(events)
+        setFlags(flags)
+        checkForLateVendors(events)
+      }
+
+      fetchLiveData() // immediate first load
+      const interval = setInterval(fetchLiveData, 5000) // every 5 seconds
+
+      return () => clearInterval(interval) // cleanup on unmount
+    }, [weddingId])
+
+    const checkForLateVendors = (events) => {
+      const now = new Date()
+      const lateEvents = events.filter(e =>
+        e.status === 'UPCOMING' &&
+        !e.checkIn &&
+        new Date(e.scheduledTime) < now &&
+        (now - new Date(e.scheduledTime)) > 30 * 60 * 1000 // 30+ minutes late
+      )
+      setLateAlerts(lateEvents)
+    }
+
+  This is simple, reliable, and works perfectly for a demo.
+  The judge won't know it's polling vs. WebSockets.
+
+================================================================================
+ LATE DETECTION DEMO SETUP
+================================================================================
+
+For the demo to work smoothly, you need a vendor that is detectably LATE.
+Here's how to set this up in the seed data:
+
+  1. Create a timeline event: scheduledTime = 30 minutes AGO from demo time
+  2. Vendor for that event: DJ Ravish
+  3. No VendorCheckIn record for this event
+  4. When the page loads: polling detects this within 5 seconds → shows red alert
+
+This makes the judge see the late alert within 5 seconds of opening the page.
+That's the WOW moment. Set this up in the seed script.
+
+================================================================================
+ YOUR 48-HOUR TIMELINE
+================================================================================
+
+HOUR 0-2: SCHEMA + API AGREEMENTS (WITH FULL TEAM)
+  → Submit your table definitions to P1
+  → Agree with P3 on getWeddingFinancialSummary return shape
+  → Confirm with P2 what WeddingVendor data is available (for day-of vendor list)
+  → Confirm with P1 what GET /api/weddings returns (for dashboard table)
+
+HOUR 2-6: MOCK DATA SETUP + DASHBOARD STRUCTURE
+  → While waiting for P1's foundation: create mock data files
+  → /lib/mocks/mockWeddings.ts — array of 5 mock weddings with P&L data
+  → /lib/mocks/mockTimeline.ts — array of 15 mock events with check-in states
+  → /lib/mocks/mockFlags.ts — 2 mock problem flags
+  → Start building dashboard page layout against mock data
+  → Do NOT wait for real APIs — build the full dashboard UI with mocks first
+
+HOUR 6-10: DASHBOARD PAGE (with mock data)
+  → Build SeasonOverview KPI cards
+  → Build WeddingTable with sort functionality
+  → Build UpcomingPayments two-column section
+  → Build VendorLeaderboard
+  → Full dashboard working against mock data
+  → PUSH: [P4] Dashboard UI complete (mocked data)
+
+HOUR 10-16: DAY-OF PAGE (with mock data)
+  → Build full LiveSchedule page with top bar + schedule list
+  → Build EventRow with all 5 button states (UPCOMING/CHECK IN/ON TIME/LATE/NOT ARRIVED)
+  → Build LateAlert banner (triggered from mockTimeline)
+  → Build ProblemFlagCard
+  → Build TimelineBuilder (add/edit/delete events)
+  → Implement polling against mock data (setInterval calling local mock fn)
+  → Full day-of page working visually with mock data and fake polling
+  → PUSH: [P4] Day-Of UI complete (mocked data)
+
+HOUR 16-20: TIMELINE API ENDPOINTS
+  → Build GET /api/timeline/:weddingId
+  → Build POST /api/timeline/events
+  → Build POST /api/checkin/:eventId (with minutesLate calculation)
+  → Build PATCH /api/timeline/events/:id
+  → Test: create 5 events, check in 3, verify minutesLate is calculated
+  → PUSH: [P4] Timeline API endpoints
+
+HOUR 20-24: FLAGS API + SWAP MOCKS FOR REAL TIMELINE
+  → Build POST /api/flags
+  → Build GET /api/flags/:weddingId
+  → Swap mockTimeline in LiveSchedule → fetch('/api/timeline/:id')
+  → Swap mockFlags in LiveSchedule → fetch('/api/flags/:id')
+  → Test: check in a vendor, see button change state
+  → Test late detection: create an event 45 mins ago with no check-in, verify alert
+  → PUSH: [P4] Day-Of page on real data
+
+HOUR 24-28: DASHBOARD API + SWAP MOCKS FOR REAL
+  → Build GET /api/dashboard/season
+  → Import getWeddingFinancialSummary from P3's lib/payments.ts
+    → If P3 not ready: keep mock data, wire in at hour 34
+  → Swap mockWeddings in dashboard → fetch('/api/dashboard/season')
+  → Test: view dashboard with real wedding data
+  → PUSH: [P4] Dashboard on real data
+
+HOUR 28-32: EXPORT PANELS + DAYOF COMPACT VIEW
+  → Build DayOfPanel.tsx (compact version) — export for P1
+  → ANNOUNCE TO P1: "DayOfPanel ready at /components/dayof/DayOfPanel.tsx"
+  → Wire "Open Live View" button on DayOfPanel → navigate to /day-of/[weddingId]
+  → PUSH: [P4] DayOfPanel exported
+
+HOUR 32-40: INTEGRATION SESSION
+  → Verify dashboard correctly shows real per-wedding P&L from P3's function
+  → Verify day-of vendor data comes from P2's WeddingVendor table
+  → Verify late alert appears correctly with real data
+  → Verify check-in flow works end-to-end
+  → PUSH: [P4] Integration verified
+
+HOUR 40-46: DEMO DATA + POLISH
+  → Seed full demo day-of scenario for Sharma-Gupta wedding (Dec 17):
+      15 timeline events from 06:00 to 23:30
+      DJ Ravish event: scheduledTime = now - 35 minutes, NO check-in → LATE ALERT
+      Decor vendor: checked in 5 min before schedule → ✅ ON TIME
+      Caterer: scheduled in 45 minutes → UPCOMING (grey)
+      1 open problem flag: "Florist needs extra generator — east wing power cut"
+  → Polish late alert banner (make it unmissable)
+  → Polish dashboard table (red/green on profit/cash position)
+  → Verify polling works smoothly (no flicker, no lag)
+  → PUSH: [P4] Demo data + polish
+
+HOUR 46-48: FINAL CHECKS
+  → Open /day-of/[weddingId] → verify DJ is showing as LATE within 5 seconds
+  → Open /dashboard → verify all 5 weddings show with P&L
+  → Test check-in flow live: click CHECK IN on a vendor → button turns green
+  → Report any issues to team immediately
+
+================================================================================
+ GIT REMINDERS
+================================================================================
+
+HOUR 02: Create your feature branch, push initial mock files
+HOUR 06: PUSH — Mock data setup + dashboard structure started
+HOUR 10: PUSH — Dashboard UI complete (mocked)
+HOUR 16: PUSH — Day-Of UI complete (mocked)
+HOUR 20: PUSH — Timeline + Flags API endpoints
+HOUR 24: PUSH — Day-Of page on real data
+HOUR 28: PUSH — Dashboard on real data
+HOUR 32: PUSH — DayOfPanel exported (ANNOUNCE TO P1)
+HOUR 40: PUSH — Integration verified
+HOUR 46: PUSH — Demo data + final polish
+
+================================================================================
+ WHEN YOU NEED OTHER PEOPLE'S WORK
+================================================================================
+
+HOUR 2-10: You need NOBODY. Build everything against mocks.
+  → This is your biggest advantage. Use it. Get the UI to 90% while others
+    are still setting up.
+
+HOUR 20: You need Person 1's GET /api/weddings endpoint
+  → For the dashboard wedding table
+  → If not ready: mock data continues working. Just swap when P1 announces.
+
+HOUR 24: You need Person 3's getWeddingFinancialSummary function
+  → For per-wedding P&L in the dashboard
+  → If not ready: show mocked profit numbers. Wire real function at hour 34.
+  → Watch for P3's announcement: "Financial functions ready"
+
+HOUR 24: You need Person 2's WeddingVendor table to exist
+  → For populating vendor names in the day-of timeline
+  → The join is: TimelineEvent.vendorId → Vendor.businessName
+  → This just works if P1's schema has the Vendor table (it does from hour 2)
+
+HOUR 32: You announce to Person 1 that DayOfPanel is ready to import
+  → Send message: "DayOfPanel done. Import from /components/dayof/DayOfPanel.tsx
+    Props: { weddingId: string }"
+
+HOUR 34: Integration session — work directly with P3 to verify the financial
+  summary calculation flows correctly into your dashboard
+  → Sit together for this. Don't try to debug async.
+
+================================================================================

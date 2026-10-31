@@ -1,0 +1,1477 @@
+================================================================================
+ PROJECT DESCRIPTION REPORT
+ SYSTEM NAME: VIVAH — Wedding Agency Operations Platform
+ VERSION: 1.0 | HACKATHON BUILD
+ DATE: OCTOBER 2026
+ TEAM SIZE: 4
+================================================================================
+
+--------------------------------------------------------------------------------
+ DOCUMENT INDEX
+--------------------------------------------------------------------------------
+
+ 1. EXECUTIVE SUMMARY
+ 2. THE PROBLEM — WHAT IS ACTUALLY BROKEN
+ 3. MARKET RESEARCH — WHAT EXISTS TODAY
+ 4. REFERENCE SYSTEMS — WHAT WE BORROWED FROM
+ 5. THE GAP — WHAT NOBODY HAS BUILT
+ 6. PROPOSED SOLUTION — WHAT VIVAH IS
+ 7. SCOPE — WHAT WE ARE BUILDING IN 48 HOURS
+ 8. SYSTEM MODULES — DETAILED DESCRIPTION
+ 9. FINANCIAL ENGINE — THE CORE PROMISE
+10. DATA RELATIONSHIPS — HOW EVERYTHING CONNECTS
+11. DESIGN APPROACH — HOW WE HANDLE UI/UX
+12. WHY THIS APPROACH — JUSTIFICATION OF DECISIONS
+13. WHAT WE ARE NOT BUILDING
+14. SUCCESS CRITERIA — HOW DO WE KNOW IT WORKED
+15. TEAM DIVISION OF WORK
+
+================================================================================
+ SECTION 1: EXECUTIVE SUMMARY
+================================================================================
+
+VIVAH is a unified, India-native wedding agency operations platform that takes
+a wedding planning agency from the moment a couple makes an enquiry to the moment
+the last vendor is paid and the founder reviews the season's profit — in a single
+system with zero data loss, zero payment confusion, and real-time financial
+visibility.
+
+The name VIVAH (विवाह) is the Sanskrit/Hindi word for wedding/marriage. It is
+familiar, culturally anchored, and immediately communicates the domain.
+
+VIVAH is not a couple-facing wedding planning app. It is not a vendor marketplace.
+It is not a guest management tool. It is the operational backbone for the AGENCY
+— the team of professional wedding planners who orchestrate the entire event.
+
+The core thesis of VIVAH is:
+
+  "A wedding planning agency using VIVAH can manage twice as many weddings with
+   zero payments lost, zero vendors underpaid, zero tasks missed, and real-time
+   visibility into every rupee earned and spent — without adding more staff."
+
+This is built for an agency exactly like The Royal Knot (Jaipur/Udaipur), doing
+25 luxury weddings per season with 18+ vendors per wedding and budgets in crores.
+But the system scales to any agency doing 5 to 100 weddings per season.
+
+================================================================================
+ SECTION 2: THE PROBLEM — WHAT IS ACTUALLY BROKEN
+================================================================================
+
+To understand why VIVAH needs to exist, you need to understand what a wedding
+planning agency actually does in the course of one wedding season, and where
+exactly the operational chaos lives today.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2.1 THE SCALE OF ONE WEDDING
+
+A typical luxury Indian wedding is not a single event. It is a 2 to 5 day,
+multi-function production. The functions typically include:
+
+  Day 1: Mehendi ceremony (150–300 guests, daytime, informal)
+  Day 2: Sangeet night (300–500 guests, evening, performance-heavy)
+  Day 3: Wedding ceremony + Reception (400–1000 guests, the main event)
+
+Each function has its own:
+  - Venue or venue zone
+  - Guest list (not all guests attend all functions)
+  - Decor theme
+  - Food and catering requirement
+  - Entertainment lineup
+  - Photography and video crew
+  - Schedule and timeline
+  - Vendor set
+
+A single wedding therefore involves:
+  → 18 to 22 different vendor categories
+  → 400+ guests (some weddings 1000+)
+  → 3 to 5 days of live execution
+  → ₹20 lakh to ₹5 crore total budget
+  → 25 to 40 task items per wedding across planning and execution
+  → 3 to 5 payment milestones per vendor
+  → Multiple change orders after the event (extra guests, extended DJ hours,
+     additional flower arrangements, fuel overruns, etc.)
+
+Now multiply this by 25 weddings in a season. That is the world the agency
+operates in.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2.2 THE 6 BROKEN SCENARIOS (REAL PAIN POINTS)
+
+BROKEN SCENARIO 1: THE LOST ENQUIRY
+  A couple calls from Instagram after seeing a wedding reel. Nobody picks up.
+  They WhatsApp. The message gets buried under 47 other messages. Three days
+  later someone sees it. The couple has already hired a competitor.
+
+  Current state: Enquiries arrive via Instagram DMs, WhatsApp, phone calls,
+  website contact forms, and wedding marketplace referrals. No single inbox.
+  No tracking. No follow-up reminder. A typical agency loses 20–30% of warm
+  leads simply by not responding in time.
+
+BROKEN SCENARIO 2: THE VENDOR QUOTE NIGHTMARE
+  The planner needs a caterer for 400 guests. They ask 3 caterers for quotes.
+  Each caterer responds with a different PDF over WhatsApp 2–3 days later.
+  One quotes per plate. One quotes a package. One includes bar service. One
+  does not. The planner opens three PDFs side by side, creates an Excel sheet
+  manually, types in the numbers, tries to normalize everything to a per-plate
+  rate, and shares a summary with the couple.
+
+  This process takes 4–6 hours per vendor category. There are 18 vendor
+  categories. The planner does this for every wedding. For 25 weddings a season,
+  this is hundreds of hours of pure admin work that creates zero value.
+
+BROKEN SCENARIO 3: THE REWRITTEN CHECKLIST
+  Every time a new wedding is confirmed, the planner opens last season's paper
+  diary, finds the old checklist, and rewrites it with new names and dates. Some
+  tasks get forgotten. Venue booking is remembered; earthing kit for the sound
+  system is not. By the time the wedding day arrives, someone realizes three tasks
+  were never completed.
+
+  Current state: Checklists exist in paper diaries, WhatsApp notes, or personal
+  Google Docs. They are never standardized. They are rewritten from scratch or
+  copied imperfectly for each wedding. Ownership of tasks is unclear. Deadlines
+  are not tracked.
+
+BROKEN SCENARIO 4: THE DAY-OF CHAOS
+  It is the wedding day. The DJ was supposed to arrive at 9 AM for sound check.
+  It is 9:45 AM. Nobody knows where he is. The planner is on the phone with the
+  groom's family about the baraat timing. The assistant is managing the caterer's
+  setup. The florist needs an extra generator. The bride's car is stuck in traffic.
+  The planner has no single view of what is happening where, who has arrived, who
+  is late, and who needs to make a decision in the next 10 minutes.
+
+  Current state: Day-of coordination happens via a WhatsApp group with 30+
+  people, voice calls, and shouting across a venue. Vendors confirm arrival
+  verbally and nobody records it. Problems surface only when they are already
+  crises.
+
+BROKEN SCENARIO 5: THE PAYMENT CHAOS
+  The wedding is over. 15 vendors were paid advances. 60 extra guests showed up
+  at the banquet. The DJ was extended by 2 hours. An extra flower arch was added
+  last minute. The planner now has to:
+    → Calculate what each vendor is owed (total agreed minus advance already paid)
+    → Add extras for each vendor (extra plates, extra hours, extra items)
+    → Bill the couple for all the extras (and hope they don't dispute it)
+    → Make sure no vendor gets paid twice
+    → Make sure no vendor is forgotten
+    → Record all of this somewhere
+
+  Current state: This is done from memory, WhatsApp message history, and
+  notebooks. Vendors get paid wrong amounts. Extras go unbilled. Couples
+  dispute charges because there is no documented record. The agency loses
+  money on every wedding due to reconciliation errors.
+
+BROKEN SCENARIO 6: THE INVISIBLE PROFIT
+  The founder sits down at the end of the season and asks: which of the 25
+  weddings made money, and which lost money? The answer is: nobody knows. The
+  agency knows total revenue from couples. They roughly know total vendor costs.
+  But per-wedding profitability, accounting for team hours, travel costs, extras,
+  and reconciliation errors, has never been calculated accurately. The founder
+  is running a multi-crore business completely blind.
+
+  Current state: Monthly Tally entries or basic Excel sheets. No per-wedding
+  P&L. No team hour cost allocation. No season dashboard. No cash flow forecast.
+  Profit is discovered — if at all — months after the season ends.
+
+================================================================================
+ SECTION 3: MARKET RESEARCH — WHAT EXISTS TODAY
+================================================================================
+
+We researched 25+ tools across India, the US, EU, UK, and Australia. Here is
+what we found:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.1 INDIA — THE LOCAL MARKET
+
+India has 1,544 active wedding-tech companies as of 2026, with only $70 million
+in total sector funding across all of them. This is shockingly low for a $139
+billion market. The reason: almost all funding went to MARKETPLACES (vendor
+discovery for couples) and not to AGENCY OPERATIONS SOFTWARE.
+
+India-specific tools audited:
+
+  WEDDINGKART
+  → WhatsApp-native guest management, RSVP automation, multi-wedding dashboards
+  → Priced per-wedding at ₹4,999+
+  → Strong on guest communication via WhatsApp
+  → Completely absent: vendor operations, payment reconciliation, P&L
+
+  WEDD.AI
+  → AI-powered WhatsApp RSVP automation
+  → Strongest feature: handles 70–80% of repetitive guest questions via bot
+  → Useful as one component; useless as an agency ops tool
+
+  PLAN A WEDDING
+  → Claims to be "India's First Wedding Industry Operating System"
+  → Has a dual-app ecosystem: couple-facing + enterprise CRM for planners
+  → Covers leads, tasks, vendor lists, milestones across 350+ cities
+  → Gaps: No vendor quote comparison, no per-wedding P&L, no live day-of
+    vendor check-in, no payment reconciliation with extras
+
+  SHAADI SCHEDULER
+  → AI-generated checklists per event type
+  → Couple-facing tool, not planner-facing
+  → Zero vendor operations or financial tracking
+
+  WEDMEGOOD / WEDDINGWIRE INDIA
+  → Pure marketplaces for vendor discovery
+  → Not operational tools at all
+  → Help couples FIND vendors; do nothing for planner workflow
+
+  CONCLUSION ON INDIA:
+  Every Indian tool falls into one of two buckets: marketplace for couples,
+  or guest management for families. ZERO tools build the agency's operational
+  backbone: vendor quoting, task management, payment lifecycle, day-of
+  execution, and per-wedding financial reporting.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.2 GLOBAL — US / EU / UK / AUSTRALIA
+
+  HONEYBOOK (US) — $16–79/month
+  → Best-in-class for inquiry to contract to client payment
+  → Automated follow-up sequences, digital proposals, e-signatures,
+    installment payment plans, auto-reminders, revenue summary
+  → Critical gap: It tracks CLIENTS, not VENDORS. No vendor roster,
+    no vendor payment tracking, no vendor quote comparison, no day-of
+    timeline, no guest lists, no floor plans
+  → Designed exclusively for US market (USD, US tax, US contract formats)
+
+  AISLE PLANNER (US) — $49.99–189.99/month
+  → Gold standard for planning and timelines
+  → AI-powered timeline builder, vendor coordination portal, itemized budget
+    tracking, design boards, checklists, task management
+  → Critical gap: No live day-of vendor check-in, no vendor quote comparison,
+    no per-wedding P&L, no financial season dashboard
+  → Vendor info does not carry over between weddings efficiently
+  → US-centric (no Indian multi-day structure, no Indian payment customs)
+
+  HARPSEN (US/UK)
+  → Strong on execution: run-of-show views, vendor responsibilities, team
+    assignments, proposal-to-execution in one place
+  → Relatively new; depth of vendor payment reconciliation unclear
+
+  TRUE CLIENT PRO (US)
+  → Has vendor quote comparison and vendor payment tracking (original quote
+    vs. amount paid vs. amount remaining per vendor)
+  → The closest globally to solving the vendor payment problem
+  → No day-of live vendor check-in, no season P&L, no India features
+
+  BRIDAL INTEL (US)
+  → AI-powered structured vendor quote comparison dashboard
+  → The best-in-class for comparing vendor quotes side by side
+  → Standalone vendor sourcing tool only — no project management, no payments,
+    no execution features
+
+  WEDINEST (EU)
+  → CRM for planners: reusable vendor directory across weddings, paid/pending
+    amounts per vendor at a glance, tasks and timelines per wedding
+  → No quote comparison, no day-of operations, no season-level analytics
+
+  PLANNING POD (US) — $59.99–129/month
+  → Most comprehensive generic event management: CRM, budgets, logistics,
+    floor planning, BEO generation, day-of deliverables
+  → Not wedding-specific, not India-specific
+
+  CONCLUSION ON GLOBAL:
+  US/EU wedding planners use a STACK of 2–4 tools: HoneyBook for client
+  onboarding + payments, Aisle Planner for planning + timelines, True Client
+  Pro or spreadsheets for vendor tracking, QuickBooks for accounting.
+  This stack costs $100–320/month and still leaves major gaps: no vendor
+  quote comparison, no live day-of vendor check-in with alerts, no per-wedding
+  P&L with vendor costs, no Indian multi-day wedding structure.
+
+================================================================================
+ SECTION 4: REFERENCE SYSTEMS — WHAT WE BORROWED FROM
+================================================================================
+
+We are not building from zero. We have taken the best patterns from existing
+tools and either directly referenced them or adapted them for Indian context.
+Here is exactly what we took from whom and why:
+
+  FROM HONEYBOOK:
+  → Inquiry-to-proposal-to-contract-to-payment in ONE linear flow
+  → Automated follow-up reminder logic when an enquiry hasn't been responded to
+  → Installment payment schedule with milestone tracking
+  → The client portal concept (shared view for couple)
+  Why we borrowed this: HoneyBook's client onboarding flow is the best in the
+  world. We replicate its simplicity but adapt it for Indian payment customs
+  (INR, advance/balance structure, WhatsApp as primary channel).
+
+  FROM AISLE PLANNER:
+  → Task checklist template concept (pre-built checklist auto-loaded on booking)
+  → Vendor coordination: vendors linked to a specific wedding with their
+    documents, schedules, and responsibilities
+  → Timeline builder: event-by-event schedule with time slots and responsibilities
+  Why we borrowed this: The template-first approach to planning is the right
+  paradigm. Instead of starting from zero for each wedding, the planner starts
+  from a complete Indian wedding template and modifies it.
+
+  FROM BRIDAL INTEL:
+  → The structured vendor quote comparison table (normalize competing quotes
+    to the same format for apples-to-apples comparison)
+  Why we borrowed this: This is the single most powerful concept for vendor
+  management. We adapt it for the Indian market by including per-plate pricing,
+  extra-guest rate, inclusion/exclusion breakdown, and payment terms comparison.
+
+  FROM TRUE CLIENT PRO:
+  → Vendor payment ledger: original quote, advance paid, balance remaining,
+    extras added, final amount due — per vendor, per wedding
+  Why we borrowed this: The closest existing tool to solving vendor payment
+  reconciliation. We extend it to handle Indian vendor payment customs (token →
+  advance → pre-event → post-event) and the extras/change-order workflow.
+
+  FROM WEDINEST:
+  → Persistent vendor directory that carries performance history across weddings
+  → Season-level view of all weddings simultaneously
+  Why we borrowed this: The reusable vendor directory is critical. A planner
+  should not re-enter Rajesh Caterers' details for every wedding. They work with
+  the same 30–50 vendors repeatedly. Ratings from past weddings should inform
+  future selections.
+
+  FOR DESIGN AND MOOD BOARDS:
+  We are NOT building a mood board or design tool. This problem is solved.
+  We will use direct API integration or embed links to:
+  → Pinterest boards (couples already use this to communicate their vision)
+  → Canva designs (planners already use this for mood boards and floor plans)
+  → Google Drive links (for storing signed contracts and final design files)
+
+  Each wedding record in VIVAH will have a "Design References" section where
+  the planner attaches Pinterest links, Canva links, or uploads a PDF/image.
+  We are not reinventing the mood board. We are contextualizing it within the
+  wedding record so it is never lost in a WhatsApp thread.
+
+  Why this is the right call: Building a mood board tool from scratch in 48 hours
+  is both unnecessary and wasteful. Pinterest and Canva are already best-in-class.
+  The gap is not the design tool itself; it is the fact that the design reference
+  lives in a different place from the vendor list, the budget, and the timeline.
+  VIVAH solves the context problem, not the design tool problem.
+
+================================================================================
+ SECTION 5: THE GAP — WHAT NOBODY HAS BUILT
+================================================================================
+
+After researching every major tool globally and locally, here is a precise map
+of what has NEVER been built in a single unified system:
+
+  GAP 1: VENDOR QUOTE COMPARISON INTEGRATED INTO A PROJECT
+  No tool lets a planner send an RFQ to multiple vendors within the same wedding
+  project, receive structured (not PDF) quotes, compare them side by side with
+  normalized pricing, select a winner, auto-close the others, and have the
+  selected vendor's payment schedule automatically flow into the wedding's
+  financial tracker — all in one action, from within the wedding record.
+  Currently this is 4 to 6 hours of manual work per vendor category.
+
+  GAP 2: LIVE DAY-OF COMMAND CENTER WITH VENDOR CHECK-IN
+  No tool anywhere in the world provides a live, real-time, minute-by-minute
+  schedule visible to all team members simultaneously where:
+    → Each vendor can be marked as "Arrived" with a timestamp
+    → The system automatically flags when a vendor is overdue (hasn't arrived
+       by their scheduled time)
+    → The planner gets a push/in-app alert
+    → Team members see updates in real time
+    → The schedule can be adjusted live (push all events by 30 minutes)
+    → Different team members have role-based views
+
+  GAP 3: VENDOR PAYMENT RECONCILIATION WITH CHANGE ORDERS
+  No tool handles the post-wedding financial close:
+    → What did we agree to pay each vendor?
+    → What advance have we already paid?
+    → What extras were added (extra plates, extra hours, extra items)?
+    → What does the vendor's final invoice say vs. what we agreed?
+    → What do we now owe each vendor?
+    → What do we bill the couple for extras?
+    → Has this vendor already been paid for any portion of this extra?
+  This end-to-end reconciliation flow is manually done in every agency today.
+
+  GAP 4: PER-WEDDING P&L IN REAL TIME
+  No tool calculates profit per wedding as:
+    Revenue (agency fee + commissions) minus Costs (vendor payments + team
+    hours + travel + miscellaneous) = Net profit per wedding
+  With the ability to view this for all weddings in a season simultaneously,
+  ranked by profitability, with outstanding payments factored in.
+
+  GAP 5: INDIA-NATIVE MULTI-FUNCTION WEDDING DATA MODEL
+  Every global tool models a wedding as a single event on a single date.
+  Indian weddings are 2–5 distinct functions (Mehendi, Sangeet, Wedding,
+  Reception) over multiple days, each with its own vendors, guests, timeline,
+  and budget. No existing tool has this data model. This is a structural moat
+  that cannot be retrofitted onto Western-designed tools.
+
+  GAP 6: WHATSAPP-FIRST COMMUNICATION IN AN OPERATIONS CONTEXT
+  Indian planners, couples, and vendors communicate primarily on WhatsApp.
+  Western tools are email-first. The result is that the operational system
+  and the actual communication channel are always different applications,
+  leading to information loss when decisions made on WhatsApp are never
+  recorded in the system.
+
+================================================================================
+ SECTION 6: PROPOSED SOLUTION — WHAT VIVAH IS
+================================================================================
+
+VIVAH is a web-based, mobile-responsive, India-native wedding agency operations
+platform built around six core modules that together form a complete operational
+system from enquiry to season review.
+
+The platform is designed for two types of users within a wedding agency:
+
+  THE PLANNER: Manages individual weddings. Books vendors. Tracks tasks.
+  Coordinates day-of execution. Handles vendor payments.
+
+  THE FOUNDER / DIRECTOR: Views all weddings simultaneously. Monitors cash
+  flow. Reviews per-wedding profitability. Sees outstanding payments.
+  Makes strategic decisions based on real data.
+
+VIVAH's design philosophy:
+
+  1. ZERO DATA LOSS: Every enquiry, quote, decision, payment, and event is
+     recorded in the system. Nothing lives in a WhatsApp thread or paper diary.
+
+  2. STRUCTURED OVER FREE-FORM: Instead of text fields and open notes, VIVAH
+     uses structured data. A vendor quote is not a PDF; it is a form with
+     specific fields. A payment is not a WhatsApp message; it is a ledger entry.
+     This makes comparison, calculation, and reporting possible.
+
+  3. AUTOMATION WHERE IT SAVES TIME: When a wedding is confirmed, the task
+     checklist is auto-generated. When a vendor is selected from quotes, the
+     others are auto-closed. When a payment milestone arrives, the system flags
+     it. The planner should not have to remember — the system remembers.
+
+  4. FINANCIAL ACCURACY AS NON-NEGOTIABLE: Every rupee that goes in and out
+     is tracked at the wedding level, at the vendor level, and at the season
+     level. The system cannot produce a wrong balance. It is double-entry
+     aware: you cannot pay a vendor more than what is owed. You cannot mark a
+     payment as complete without recording the amount and date.
+
+  5. INDIA FIRST: Multi-function wedding data model. Indian payment customs
+     (token → advance → milestone → final). INR everywhere. WhatsApp as the
+     communication layer. Indian vendor categories (Pandit, Dhol, Mehendi
+     artist, Rangoli artist, Trousseau packing, etc.). Jain menu as a dietary
+     option. Multi-day event structure.
+
+================================================================================
+ SECTION 7: SCOPE — WHAT WE ARE BUILDING IN 48 HOURS
+================================================================================
+
+This is a hackathon. We build a complete, working prototype with real data,
+real logic, and a real financial engine. We do not build slides or mockups.
+We build a system that can be demonstrated with actual data flowing through it.
+
+WHAT WE BUILD:
+
+  MODULE 1: ENQUIRY & COUPLE MANAGEMENT
+  MODULE 2: WEDDING PROJECT & TASK BOARD
+  MODULE 3: VENDOR DIRECTORY & QUOTE COMPARISON
+  MODULE 4: PAYMENT ENGINE (Both Directions)
+  MODULE 5: DAY-OF LIVE COMMAND CENTER
+  MODULE 6: FOUNDER DASHBOARD (Season Overview)
+
+Each module is described in detail in Section 8.
+
+WHAT WE REFERENCE BUT DO NOT BUILD:
+  → Mood boards and design: linked from Canva/Pinterest, stored as URLs
+  → Guest management: basic headcount per function (not full RSVP system)
+  → E-signature: DocuSign/DigiSigner API reference (mocked in prototype)
+  → WhatsApp integration: referenced in UI, not fully integrated in prototype
+  → GST and TDS calculation: amounts tracked, tax computation simplified
+
+WHAT WE DO NOT BUILD AT ALL:
+  → Accounting system (Tally/QuickBooks integration)
+  → Mobile native app (responsive web covers demo needs)
+  → AI features (no chatbots, no AI matching, no ML)
+  → Payment gateway (payments marked manually as paid/unpaid)
+  → Vendor-facing portal (vendors are managed by planners, not self-serve)
+
+================================================================================
+ SECTION 8: SYSTEM MODULES — DETAILED DESCRIPTION
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 1: ENQUIRY & COUPLE MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Ensure that no enquiry is ever lost, and that every couple's information,
+preferences, and decisions are stored in one place from the first contact.
+
+HOW IT WORKS:
+
+  ENQUIRY CAPTURE
+  The planner (or an embedded web form that couples fill out) captures:
+    → Bride & Groom names
+    → Contact number and email
+    → Source of enquiry (Instagram, WhatsApp, WedMeGood, referral, website)
+    → Approximate wedding date or date range
+    → Preferred location (Jaipur, Udaipur, home city, destination)
+    → Guest count estimate
+    → Budget range (₹ bracket selection)
+    → Type of wedding (Hindu, Muslim, Christian, Sikh, Fusion, Civil)
+    → Functions requested (Mehendi, Haldi, Sangeet, Wedding, Reception —
+       each as a toggle)
+    → Vibe/theme preferences (text + option to paste a Pinterest URL)
+    → Package interest (Full Service or Day-Of Coordination)
+    → Special notes or non-negotiables
+
+  ENQUIRY PIPELINE
+  Every enquiry moves through a visual kanban-style pipeline:
+    ENQUIRY → CONSULTATION SCHEDULED → PROPOSAL SENT → NEGOTIATION →
+    BOOKED (deposit paid) → PLANNING IN PROGRESS → EXECUTION →
+    COMPLETED → CLOSED (lost / cancelled)
+
+  At each stage:
+    → The planner assigned to the enquiry is shown
+    → The date it entered that stage is recorded
+    → A follow-up reminder can be set (e.g., "Call back in 3 days if
+       no response to proposal")
+    → Notes can be added at any stage
+
+  SERVICE AGREEMENT
+  Once a couple confirms and pays the booking deposit:
+    → The system generates a service agreement from a standard template
+      populated with the couple's details, chosen package, total budget,
+      payment schedule, and key terms
+    → The planner downloads this as a PDF, sends via WhatsApp/email
+    → After signing, the signed PDF is uploaded back and attached to the
+       couple's record permanently
+    → The booking deposit is recorded in the payment engine simultaneously
+
+  COUPLE PROFILE (The Master Record)
+  Every couple has a permanent profile in the system containing:
+    → Personal details
+    → All functions with dates, venues, and estimated guest counts
+    → Linked wedding project (tasks, vendors, timeline)
+    → Design references (Pinterest URLs, Canva links, uploaded images)
+    → All payments (to/from)
+    → All communications log
+    → Signed agreement attachment
+    → Notes from each planner interaction
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 2: WEDDING PROJECT & TASK BOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Replace the paper diary. Auto-generate a complete, wedding-specific task plan
+the moment a wedding is confirmed, and track every task to completion.
+
+HOW IT WORKS:
+
+  AUTO-GENERATION ON BOOKING
+  The moment a couple is marked as "Booked" (deposit recorded), the system
+  automatically creates a complete task checklist for their wedding based on:
+    → The functions they have selected (if Mehendi is selected, Mehendi-
+       specific tasks appear; if not, they don't)
+    → The package chosen (Full Service has 35+ tasks; Day-Of has 12 tasks)
+    → The wedding date (all deadline dates are auto-calculated backwards
+       from the wedding date: "Book venue — 6 months before wedding",
+       "Menu tasting — 6 weeks before wedding", etc.)
+
+  THE MASTER TASK TEMPLATE
+  The system has a pre-built Indian wedding task template covering:
+
+    PRE-PLANNING TASKS (6+ months out):
+      → Budget finalization and category allocation
+      → Venue shortlisting and site visits
+      → Venue booking and contract
+      → Mehendi artist search and booking
+      → Photographer/videographer search and booking
+      → Catering vendor shortlist and quote request
+      → Date finalization with Pandit (Muhurat)
+
+    MID-PLANNING TASKS (3–6 months out):
+      → Decor concept and theme finalization
+      → Invitation design and printing
+      → Sangeet choreographer booking
+      → Menu finalization and tasting session
+      → Accommodation booking for outstation guests
+      → Guest list compilation and RSVP tracking kickoff
+
+    FINAL PREPARATION TASKS (1–4 weeks out):
+      → Final guest count confirmation per function
+      → Vendor briefing sessions (each vendor gets their specific schedule)
+      → Venue site visit for layout and logistics confirmation
+      → Final payment release to vendors (pre-event portions)
+      → Day-of schedule creation and sharing with team
+      → Emergency backup planning (backup generator, backup vendors)
+
+    DAY-OF TASKS:
+      → Vendor check-in tracking (automatically managed in Module 5)
+      → Function-level milestones (Jaimala done, Pheras complete, etc.)
+      → Real-time issue tracking
+
+    POST-WEDDING TASKS:
+      → Vendor final payment release (after reconciliation)
+      → Extra charges calculation and couple billing
+      → Final invoice to couple
+      → Vendor rating and feedback
+      → Portfolio (photos/videos) collection for agency's Instagram/website
+
+  TASK CARD STRUCTURE
+  Each task contains:
+    → Task name and description
+    → Function it belongs to (Mehendi / Sangeet / Wedding / Reception / General)
+    → Category (Venue / Catering / Decor / Entertainment / Photography /
+       Logistics / Documentation / Financial / Guest Management)
+    → Assigned to (which planner owns this)
+    → Due date (auto-calculated from wedding date, editable)
+    → Status: TO PLAN → IN PROGRESS → AWAITING APPROVAL → DONE → BLOCKED
+    → Priority: HIGH / MEDIUM / LOW
+    → Notes and attachments
+    → Linked vendor (if this task involves a vendor booking)
+    → Linked payment (if this task triggers a payment)
+
+  TASK BOARD VIEW
+  Planners see tasks in:
+    → Kanban board (columns by status)
+    → Calendar view (tasks by due date)
+    → List view (sortable by priority, function, or category)
+    → My Tasks view (filtered to what's assigned to me)
+
+  OVERDUE TASK ALERTS
+  Any task past its due date with status not "DONE" is highlighted in red
+  and appears at the top of the planner's dashboard with a notification.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 3: VENDOR DIRECTORY & QUOTE COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Maintain a persistent, rated, agency-owned vendor database and eliminate the
+manual, error-prone process of comparing vendor quotes across PDF files.
+
+HOW IT WORKS:
+
+  MASTER VENDOR DIRECTORY
+  The agency maintains one central vendor database — not per wedding.
+  Every vendor the agency has ever worked with is here.
+
+  Each vendor record contains:
+    → Business name and contact
+    → Category (Catering / Decor / Photography / Videography / DJ & Sound /
+       Band / Dhol Players / Mehendi Artist / Makeup Artist / Choreography /
+       Transportation / Tent & Pandal / Generator & Power / Priest / Valet /
+       Security / Invitation & Stationery / Gifts & Favors)
+    → City / Service Area
+    → Contact person and phone
+    → Payment preference (bank transfer, UPI, cash)
+    → GST registration (Yes/No, GSTIN)
+    → Notes (e.g., "Always late for setup", "Very responsive to changes",
+       "Doesn't do outdoor venues")
+    → Performance history:
+        - Number of weddings done with this agency
+        - Average rating (out of 5, from past wedding reviews)
+        - Last used date
+        - Any disputes or issues recorded
+
+  VENDOR CATEGORIES (India-Specific)
+  Pre-loaded Indian wedding vendor categories including:
+    Catering, Decor & Florals, Photography, Videography, DJ & Sound,
+    Live Band, Dhol Players, Mehendi Artist, Bridal Makeup Artist,
+    Groom Styling, Sangeet Choreographer, Anchor/Emcee, Fireworks/Pyro,
+    Pandit/Priest, Venue, Transportation, Horse/Elephant/Vintage Car (Baraat),
+    Valet Parking, Security, Tent & Pandal, Generator & Power, Invitation
+    Design, Printing, Gift Hampers, Same-Day Edit Video, Drone Operator.
+
+  THE QUOTE REQUEST FLOW
+  For any vendor category in a wedding:
+
+    STEP 1: SEND RFQ
+    Planner selects the vendor category (e.g., Catering) for the wedding.
+    Selects 2–4 vendors from the directory to request quotes from.
+    System generates an RFQ summary document with:
+      → Wedding date and location
+      → Functions requiring this service
+      → Guest count per function
+      → Specific requirements
+    This RFQ is shared with vendors (WhatsApp/email — PDF or link).
+
+    STEP 2: ENTER QUOTES RECEIVED
+    When vendors send back their quotes (via WhatsApp, PDF, call), the
+    planner enters the data into the system using a STRUCTURED QUOTE FORM.
+    The form is category-specific.
+
+    For CATERING, the form asks:
+      → Price per plate per function (each function separately)
+      → Inclusions: live counters? bar service? premium crockery? LED tables?
+      → Exclusions: what is NOT included?
+      → Extra plate rate (rate per additional guest above headcount)
+      → Extra hour rate (if event runs longer)
+      → Service staff included? Ratio?
+      → Payment terms (what % advance, when is balance due)
+      → Validity of quote (date)
+      → Any special offers or notes
+
+    For DECOR & FLORALS:
+      → Quote per function (Mehendi / Sangeet / Wedding)
+      → Breakdown: Stage decor / Entrance / Ceiling / Floral / Lighting /
+         Tables / Photo booth
+      → Fresh flowers vs. artificial
+      → What is included vs. rented
+      → Payment terms
+
+    For PHOTOGRAPHY:
+      → Number of photographers + videographers
+      → Hours covered
+      → Pre-wedding shoot included?
+      → Drone included?
+      → Delivery: albums, edited video, reels — what and when
+      → Raw files included?
+      → Payment terms
+
+    Each category has its own structured quote form to ensure comparability.
+
+    STEP 3: SIDE-BY-SIDE COMPARISON
+    Once 2+ quotes are entered for the same category, the system generates
+    a side-by-side comparison table automatically:
+
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │ QUOTE COMPARISON: Catering — Sharma-Gupta Wedding                  │
+    │                                                                      │
+    │                     │ Vendor A      │ Vendor B      │ Vendor C     │
+    │ ────────────────────┼───────────────┼───────────────┼────────────  │
+    │ TOTAL PRICE          │ ₹30,05,000   │ ₹22,20,000   │ ₹35,00,000  │
+    │ EFFECTIVE PER PLATE  │ ₹2,400       │ ₹1,933       │ ₹2,800      │
+    │ BAR SERVICE          │ ❌ Extra      │ ❌ Not offered │ ✅ Included │
+    │ LIVE COUNTERS        │ ₹75K extra   │ ✅ Included   │ ✅ Included │
+    │ EXTRA PLATE RATE     │ ₹2,500       │ ₹2,000       │ ₹3,500      │
+    │ EXTRA HOUR RATE      │ ₹15,000      │ ₹12,000      │ ₹20,000     │
+    │ PREMIUM CROCKERY     │ ❌ Standard  │ ❌ Standard   │ ✅ Included │
+    │ JAIN MENU            │ ✅ Available │ ✅ Available  │ ✅ Available│
+    │ ADVANCE REQUIRED     │ 50%          │ 30%          │ 40%         │
+    │ BALANCE DUE          │ Day before   │ After event  │ 40%/20% split│
+    │ PAST RATING (agency) │ ⭐ 4.2 (8 events)│ ⭐ 4.6 (3)│ New vendor │
+    │ ────────────────────┼───────────────┼───────────────┼────────────  │
+    │                     [SELECT VENDOR A] [SELECT VENDOR B][SELECT C]  │
+    └─────────────────────────────────────────────────────────────────────┘
+
+    STEP 4: SELECTION AND AUTO-ACTIONS
+    Planner selects the winning vendor (after discussing with couple):
+      → The selected vendor is LINKED to the wedding for this category
+      → The other RFQs are CLOSED automatically (status: Not Selected)
+      → A vendor PAYMENT SCHEDULE is auto-created in Module 4 based on the
+         payment terms in the selected quote
+      → The vendor's agreed total is added to the wedding's budget tracker
+      → The vendor appears on the Day-of schedule in Module 5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 4: PAYMENT ENGINE (THE CORE PROMISE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Track every rupee flowing into the agency (from couples) and out of the agency
+(to vendors) at the per-wedding level, with automatic calculation of what is
+owed, what has been paid, what is late, and what is outstanding — with zero
+possibility of double payment or missed payment.
+
+This is the most critical module. This is where the financial accuracy
+non-negotiable lives. If the payment engine is wrong, the whole system fails.
+
+HOW IT WORKS:
+
+  TWO COMPLETELY SEPARATE LEDGERS PER WEDDING:
+    → INCOME LEDGER: Couple → Agency
+    → EXPENSE LEDGER: Agency → Vendors
+
+  ─────────────────────────────────────────────────────────────
+  INCOME LEDGER (Couple Payments to Agency)
+  ─────────────────────────────────────────────────────────────
+
+  When a wedding is booked, the planner defines the payment schedule:
+
+    Milestone Name         | Amount      | Due Date      | Status
+    ────────────────────── | ─────────── | ──────────────| ──────
+    Booking Deposit        | ₹2,00,000  | At signing    | ✅ PAID
+    First Installment      | ₹5,00,000  | 3 months out  | ✅ PAID
+    Second Installment     | ₹5,00,000  | 1 month out   | ⏳ DUE Nov 15
+    Third Installment      | ₹5,00,000  | 1 week out    | ⏳ Future
+    Final Settlement       | CALCULATED | After wedding | ⏳ Future
+    ─────────────────────────────────────────────────────────────
+    Total Agreed:          | ₹50,00,000 |               |
+    Collected So Far:      | ₹12,00,000 |               |
+    Remaining:             | ₹38,00,000 |               |
+
+  Final Settlement is CALCULATED — not manually entered. The system computes:
+    = (Total Wedding Budget) + (All Extras Added) - (All Advances Collected)
+
+  When a payment is recorded:
+    → Amount
+    → Date received
+    → Payment method (bank transfer / UPI / cheque / cash)
+    → Reference number or UTR
+    → Who recorded it
+    → Notes
+
+  The system will NOT allow a milestone to be marked paid without these fields.
+  Amounts are validated against the expected amount (with tolerance alert if
+  partial payment is made).
+
+  OVERDUE ALERT: Any milestone past its due date without a payment recorded
+  triggers a red alert on the planner's dashboard and the founder's dashboard.
+
+  ─────────────────────────────────────────────────────────────
+  EXPENSE LEDGER (Agency Payments to Vendors)
+  ─────────────────────────────────────────────────────────────
+
+  This is auto-populated from Module 3 (vendor selection).
+  When a vendor is selected from a quote comparison, the system creates:
+
+    Vendor: Grand Mughal Kitchen (Catering)
+    Total Agreed: ₹35,00,000
+    Payment Schedule (from their quote terms):
+      → Advance (40%): ₹14,00,000 — Due 2 months before wedding
+      → Pre-event (40%): ₹14,00,000 — Due 1 week before wedding
+      → Final (20%): ₹7,00,000 — Due 7 days after wedding
+
+    Status Tracker:
+      Payment          | Amount      | Due Date  | Paid Date  | Status
+      ──────────────── | ─────────── | ─────────── | ─────── | ──────
+      Advance          | ₹14,00,000 | Oct 15    | Oct 14   | ✅ PAID
+      Pre-event        | ₹14,00,000 | Dec 8     |          | ⏳ DUE
+      Final            | ₹7,00,000  | Dec 24    |          | ⏳ Future
+
+  RECORDING A VENDOR PAYMENT:
+    → Amount paid (MUST match what is owed — system flags any variance)
+    → Date of payment
+    → Payment method (UPI / NEFT / RTGS / cheque / cash)
+    → Transaction reference / UTR
+    → Receipt upload (optional but recommended)
+    → Recorded by (which planner)
+
+  DOUBLE PAYMENT PREVENTION:
+    Once a payment tranche is marked PAID, it cannot be paid again from the
+    same schedule. The system shows a clear PAID stamp with date and reference.
+    A planner trying to record a duplicate payment for a PAID tranche gets a
+    hard block with the message: "This payment was already recorded on [date]
+    by [planner] with reference [UTR]. Check before proceeding."
+
+  CHANGE ORDERS (Extras After the Wedding):
+    After the wedding, before final settlement, the planner records all extras:
+
+    Extra Item              | Vendor          | Qty  | Rate    | Amount
+    ─────────────────────── | ─────────────── | ─── | ─────── | ──────
+    Extra guests (catering) | Grand Mughal    | 60  | ₹3,500  | ₹2,10,000
+    DJ extended (2 hours)   | DJ Ravish       | 2   | ₹15,000 | ₹30,000
+    Extra flower arch       | Royal Decor     | 1   | ₹45,000 | ₹45,000
+    Generator fuel overrun  | PowerGen        | —   | —       | ₹15,000
+    ─────────────────────────────────────────────────────────────────────
+    TOTAL EXTRAS:                                             | ₹3,00,000
+
+    System automatically:
+      → Adds extra amounts to each vendor's expense ledger as a new line item
+      → Adds total extras to the couple's income ledger as an "Extras" entry
+      → Recalculates the couple's final settlement amount
+      → Recalculates each vendor's final payment amount
+
+  ─────────────────────────────────────────────────────────────
+  PER-WEDDING FINANCIAL SUMMARY (Auto-Calculated)
+  ─────────────────────────────────────────────────────────────
+
+    INCOME:
+      Total budget agreed with couple:    ₹50,00,000
+      Extras billed:                    + ₹ 3,00,000
+      ─────────────────────────────────────────────
+      Gross Revenue:                      ₹53,00,000
+      Collected so far:                   ₹17,00,000
+      Outstanding from couple:            ₹36,00,000
+
+    EXPENSES:
+      Total vendor costs (all selected): ₹45,00,000
+      Extras added to vendors:         + ₹ 3,00,000
+      ─────────────────────────────────────────────
+      Total Vendor Obligation:           ₹48,00,000
+      Paid to vendors so far:            ₹19,60,000
+      Outstanding to vendors:            ₹28,40,000
+
+    AGENCY:
+      Gross Revenue:                     ₹53,00,000
+      Total Vendor Obligation:         - ₹48,00,000
+      ─────────────────────────────────────────────
+      Gross Agency Margin:               ₹ 5,00,000
+      Team hours cost (manual entry):  - ₹ 1,11,000
+      Travel & miscellaneous:          - ₹ 0,33,000
+      ─────────────────────────────────────────────
+      NET PROFIT (This Wedding):         ₹ 3,56,000
+      NET MARGIN:                            6.7%
+
+    CASH POSITION (Right Now):
+      Collected from couple:             ₹17,00,000
+      Paid to vendors:                 - ₹19,60,000
+      ─────────────────────────────────────────────
+      CASH GAP (agency is out of pocket):  ₹-2,60,000
+      ← This tells the founder they need the next couple installment ASAP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 5: DAY-OF LIVE COMMAND CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Give the planning team a single, live, real-time operational view during the
+actual wedding day(s), replacing the chaos of WhatsApp groups with a structured
+command center that tracks vendor arrivals, flags problems, and keeps everyone
+coordinated.
+
+This is VIVAH's most differentiated feature. Nothing like it exists anywhere.
+
+HOW IT WORKS:
+
+  PRE-BUILD (1 week before wedding):
+  The planner builds the day-of schedule for each function:
+
+    For each function (e.g., Day 3 — Wedding Ceremony):
+      → Add events in chronological order
+      → Each event: time, name, description, responsible vendor, responsible
+         planner, location (if multiple zones), expected duration
+      → Example events:
+          06:00 - Decor setup begins (Royal Decor — Main Hall)
+          08:00 - Mandap ready for inspection (Royal Decor)
+          09:00 - Sound check (DJ Ravish — Main Stage)
+          10:00 - Bridal makeup begins (Priya MUA — Bridal Suite)
+          12:00 - Catering setup begins (Grand Mughal — Banquet Hall)
+          14:00 - Baraat assembly at hotel lobby (Transport vendor)
+          15:00 - Baraat arrives at venue (All hands)
+          15:30 - Jaimala (garland exchange) — (Couple)
+          16:00 - Wedding ceremony begins (Pandit Ji — Mandap)
+          17:30 - Pheras complete
+          18:00 - Vidaai
+          19:00 - Reception doors open
+          etc.
+
+  LIVE SCHEDULE VIEW:
+  On the wedding day, the planner opens the Live Schedule on their phone
+  or tablet. The view shows:
+
+    → Current time (auto-updating)
+    → Current and next 3 events highlighted
+    → Each vendor's expected arrival time vs. actual check-in time
+    → Overall status of all events (UPCOMING / IN PROGRESS / DONE / DELAYED)
+
+  VENDOR CHECK-IN:
+    Each vendor on the schedule has a CHECK-IN BUTTON.
+    When the vendor arrives, the planner on the ground taps CHECK-IN.
+    The system records:
+      → Actual arrival time
+      → Checked in by (which planner)
+      → Optional note
+
+    CHECK-IN STATUS:
+      ✅ GREEN: Vendor arrived on time (within 15 min of expected time)
+      ⚠️ YELLOW: Vendor arrived but late (15–30 min after expected time)
+      🔴 RED: Vendor NOT checked in and expected time has passed (30+ min late)
+
+  AUTOMATED LATE ALERTS:
+    The system checks every 5 minutes.
+    If a vendor's expected arrival time has passed by 30+ minutes and they
+    have not been checked in, the system:
+      → Shows a red alert banner on ALL planners' screens
+      → Sends an in-app notification to the lead planner for this wedding
+      → The alert says: "[DJ Ravish] was expected at 09:00. It is now 09:35.
+         Not yet checked in. Take action."
+
+  LIVE TIMELINE ADJUSTMENT:
+    If an event is delayed or completed early, the planner can:
+      → Mark an event as DONE (with actual completion time)
+      → Mark an event as DELAYED (with new estimated time)
+      → ADD a new unplanned event (e.g., "Family requested extra round of
+         photos — 30 min added")
+      → All team members see updates immediately
+
+  PROBLEM FLAGGING:
+    Any team member can raise a FLAG on the live schedule:
+      → "DJ equipment not working — need backup speaker"
+      → "Florist needs extra generator — power cut on east side"
+      → "Bride's car stuck — ETA delayed 20 minutes"
+    Flags appear on all screens with a timestamp and the name of who raised it.
+    The lead planner acknowledges and either resolves or escalates.
+
+  ROLE-BASED VIEWS:
+    → LEAD PLANNER: Full view — all vendors, all events, all flags
+    → ASSISTANT PLANNER: Assigned section view (e.g., only Decor and Catering)
+    → FOUNDER (optional): Read-only view showing overall status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 6: FOUNDER DASHBOARD (SEASON OVERVIEW)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE:
+Give the founder or director a real-time, comprehensive view of the entire
+season — all weddings, all money, all outstanding actions — on a single screen.
+Answer the questions: Which weddings made money? Which lost? What do we collect
+next? What do we owe vendors?
+
+HOW IT WORKS:
+
+  SEASON OVERVIEW (Top Section):
+    → Total weddings this season: 25
+    → Status breakdown: Booked / Planning / Execution / Completed
+    → Total revenue contracted: ₹X crore
+    → Total collected: ₹Y crore
+    → Total vendor obligations: ₹Z crore
+    → Total paid to vendors: ₹A crore
+    → Net agency margin (projected): ₹B crore
+    → Cash in hand (net of inflows and outflows): ₹C
+
+  WEDDING-BY-WEDDING TABLE:
+    All 25 weddings in a sortable table:
+
+    Wedding         | Date    | Status      | Budget    | Collected | Vendor Paid | Net Profit | Action
+    ─────────────── | ─────── | ─────────── | ───────── | ───────── | ─────────── | ────────── | ──────
+    Sharma-Gupta    | Dec 17  | Planning    | ₹50L      | ₹17L      | ₹19.6L     | ₹3.56L     | ⚠️ Cash gap
+    Patel-Mehta     | Dec 22  | Booked      | ₹35L      | ₹7L       | ₹0         | Projected  | Follow-up
+    Agarwal-Jain    | Jan 5   | Completed   | ₹80L      | ₹80L      | ₹72L       | ₹6.8L      | ✅ Done
+    ...             | ...     | ...         | ...       | ...       | ...        | ...        | ...
+
+    Sortable by: date / profit / budget size / status / planner assigned
+
+  UPCOMING PAYMENTS SECTION (Next 30 Days):
+    What the agency needs to COLLECT (from couples):
+      → Patel-Mehta Second Installment: ₹3,50,000 — due Nov 20
+      → Sharma-Gupta Third Installment: ₹5,00,000 — due Dec 8
+      → [sorted by due date]
+
+    What the agency needs to PAY (to vendors):
+      → Sharma-Gupta / Grand Mughal Pre-event: ₹14,00,000 — due Dec 8
+      → Patel-Mehta / Royal Decor Advance: ₹2,40,000 — due Nov 25
+      → [sorted by due date]
+
+    This section answers: "What's coming in and going out in the next 30 days?"
+
+  VENDOR PERFORMANCE LEADERBOARD:
+    Top vendors by category, ranked by agency's internal rating across seasons:
+      → Grand Mughal Kitchen: ⭐ 4.8 | Used 12 times | 0 complaints
+      → Royal Decor: ⭐ 4.6 | Used 18 times | 1 minor complaint
+      → DJ Ravish: ⭐ 3.9 | Used 6 times | 2 late arrivals noted
+
+    Lowest rated vendors flagged for review:
+      → [Vendor name]: ⭐ 2.8 | 2 weddings | 1 major issue reported
+         → "Consider removing from preferred vendor list"
+
+  OPEN ISSUES:
+    → Overdue tasks across all weddings (flagged in red)
+    → Overdue vendor payments
+    → Overdue couple payments
+    → Weddings with no signed agreement uploaded
+
+================================================================================
+ SECTION 9: FINANCIAL ENGINE — THE CORE PROMISE
+================================================================================
+
+The financial engine is not just a feature. It is the architectural spine of
+the entire platform. Every other module feeds data into it. Here is how we
+ensure zero financial errors:
+
+PRINCIPLE 1: IMMUTABLE PAYMENT RECORDS
+Every payment recorded — whether from a couple or to a vendor — is an
+immutable ledger entry. It cannot be deleted. It can only be corrected by
+creating a reversal entry. This creates an audit trail for every rupee.
+
+PRINCIPLE 2: CALCULATED FIELDS, NEVER MANUAL TOTALS
+No total amount is ever manually entered. Every total is computed by the system:
+  → Outstanding from couple = Total budget + Extras - Total collected
+  → Outstanding to vendor = Agreed total + Extras - Total paid
+  → Net profit = (Agency fee + commissions) - (Team costs + Travel)
+  → Cash position = Total collected from couples - Total paid to vendors
+
+This means there is no way to have a wrong total from a typo.
+
+PRINCIPLE 3: CHANGE ORDERS ARE TRACEABLE
+Every extra charge (beyond the original quote) is recorded as a change order
+with: date added, who added it, which vendor it relates to, and the amount.
+Change orders are visible in both the vendor's expense ledger and the couple's
+income ledger. The couple can see exactly what they are being charged and why.
+
+PRINCIPLE 4: STATUS-LOCKED PAYMENTS
+A payment tranche can only be in one of these states: UPCOMING / DUE /
+OVERDUE / PAID. It cannot be in PAID and UPCOMING simultaneously. Once
+PAID with a reference number, it is locked. Any attempt to re-pay triggers
+a warning requiring explicit override with a reason.
+
+PRINCIPLE 5: REAL-TIME, NOT END-OF-MONTH
+The financial position updates the moment any payment is recorded. The founder
+does not wait for a monthly report. The dashboard shows the current state of
+every rupee at any time of day.
+
+================================================================================
+ SECTION 10: DATA RELATIONSHIPS — HOW EVERYTHING CONNECTS
+================================================================================
+
+The following entities exist in VIVAH and relate to each other as described:
+
+  AGENCY (1)
+    → Has many PLANNERS (users)
+    → Has many WEDDINGS per season
+    → Maintains one VENDOR DIRECTORY
+    → Has a SEASON dashboard
+
+  COUPLE (1 couple = 1 wedding record)
+    → Has multiple FUNCTIONS (Mehendi, Sangeet, Wedding, Reception)
+    → Has one INCOME LEDGER (payments from couple to agency)
+    → Has one TASK LIST (auto-generated on booking)
+    → Has one set of DESIGN REFERENCES (links and uploads)
+    → Is linked to one SERVICE AGREEMENT document
+
+  FUNCTION (part of a wedding)
+    → Has a date, venue, guest count
+    → Has a set of VENDORS assigned (one per category)
+    → Has a DAY-OF SCHEDULE (timeline of events)
+    → Has a BUDGET allocation
+
+  VENDOR (in the master directory)
+    → Belongs to one or more CATEGORIES
+    → Has a PERFORMANCE HISTORY (ratings across past weddings)
+    → Can receive multiple RFQs for different weddings
+    → When selected for a wedding, is linked to that WEDDING + FUNCTION
+
+  RFQ (Request for Quote)
+    → Belongs to one WEDDING + FUNCTION + CATEGORY
+    → Has one or more VENDOR QUOTES submitted against it
+    → One VENDOR QUOTE is marked as SELECTED (winner)
+    → All other VENDOR QUOTES are marked as NOT SELECTED (auto-closed)
+    → The SELECTED VENDOR QUOTE creates a VENDOR PAYMENT SCHEDULE
+
+  VENDOR PAYMENT SCHEDULE
+    → Belongs to one VENDOR + one WEDDING
+    → Has multiple PAYMENT TRANCHES (advance, pre-event, final)
+    → Each TRANCHE can have CHANGE ORDERS added to it
+    → Each TRANCHE has a PAYMENT RECORD when paid
+
+  PAYMENT RECORD (for both income and expense)
+    → Belongs to either the INCOME LEDGER or EXPENSE LEDGER
+    → Has: amount, date, method, reference, who recorded it
+    → Is IMMUTABLE once created (reversal only)
+
+  TASK
+    → Belongs to one WEDDING
+    → Optionally linked to one FUNCTION
+    → Assigned to one PLANNER
+    → Optionally linked to one VENDOR and/or one PAYMENT TRANCHE
+
+  TIMELINE EVENT (Day-Of Schedule)
+    → Belongs to one WEDDING + one FUNCTION
+    → Has: scheduled time, event name, vendor, planner responsible
+    → Has a CHECK-IN RECORD when vendor marks as arrived
+    → Has a PROBLEM FLAG if raised during execution
+
+================================================================================
+ SECTION 11: DESIGN APPROACH — HOW WE HANDLE UI/UX
+================================================================================
+
+We are not building a design tool. We are referencing and integrating with
+tools that already do this perfectly.
+
+WHAT WE USE FROM EXISTING TOOLS:
+
+  MOOD BOARDS & DESIGN REFERENCES:
+    → Pinterest: Each couple's wedding record has a field for their
+      Pinterest board URL. The planner adds this during the consultation.
+      The URL is stored and displayed as a clickable thumbnail in the couple's
+      profile. No mood board is rebuilt inside VIVAH.
+
+    → Canva: Floor plans, seating charts, and invitation designs created by
+      the planner in Canva are shared as a Canva view link and stored in
+      the wedding record under "Design Files."
+
+    → Google Drive: For large files (full photo albums, signed contracts,
+      vendor invoices), Google Drive links are stored in the relevant
+      record (couple profile or vendor payment record).
+
+  WHY THIS IS THE RIGHT DECISION:
+    Building a design tool in 48 hours is impossible to do well, and it is
+    unnecessary. Planners already use Pinterest and Canva daily. They know
+    these tools. VIVAH's job is to contextualize these references within the
+    operational record, not to replace them. A mood board link in the wedding
+    record is infinitely more useful than a broken half-baked design tool.
+
+  VIVAH'S OWN UI DESIGN APPROACH:
+    The UI of VIVAH follows a dashboard-first, data-dense, operations-oriented
+    design language. Not the light, pretty, couple-facing aesthetic of
+    WeddingWire. Think closer to Linear, Notion, or Jira — clean, structured,
+    information-rich, and task-focused. Because this is a tool for planners
+    who are professionals managing crores of rupees, not couples dreaming
+    about their wedding.
+
+    Color system:
+      → Primary: Deep Burgundy (#6B2737) — wedding-appropriate, professional
+      → Secondary: Warm Gold (#B8860B) — luxury context
+      → Background: Off-white (#FAFAF8) — easy on the eyes for long sessions
+      → Alerts: Standard Red / Amber / Green for status indicators
+      → Data tables: Clean, bordered, high-contrast for readability
+
+    Typography: Inter (clean, professional, highly legible in dense tables)
+
+    Component library: Shadcn/UI or Chakra UI for React — pre-built,
+    accessible, production-quality components so we are not designing from
+    scratch. We assemble, not design.
+
+    Responsive: Mobile-first for the Day-Of Command Center (planners are on
+    phones during the event). Desktop-optimized for the Founder Dashboard
+    and planning modules (planners sit at desks for vendor management and
+    financial work).
+
+================================================================================
+ SECTION 12: WHY THIS APPROACH — JUSTIFICATION OF DECISIONS
+================================================================================
+
+WHY WEB APP, NOT MOBILE APP?
+  → A web app (responsive) works on any device without an app store submission.
+  → The Day-Of module is mobile-responsive — it works perfectly on a phone
+    without being a native app.
+  → In 48 hours, a native app is impossible to build and demo properly.
+  → React/Next.js with responsive CSS gives us mobile functionality where
+    needed (Day-Of) and desktop richness where needed (dashboards).
+
+WHY NOT BUILD AI FEATURES?
+  → AI features add complexity without demonstrating the core value.
+  → The core value of VIVAH is STRUCTURED DATA and AUTOMATED CALCULATION,
+    not AI. The system's intelligence comes from enforcing structure, not
+    from machine learning.
+  → AI vendor matching or AI timeline generation are features for V2. In
+    a hackathon, they would be fake demos that distract from real functionality.
+
+WHY POSTGRES (RELATIONAL DATABASE)?
+  → Wedding data is HIGHLY relational: weddings have functions, functions
+    have vendors, vendors have payment schedules, payment schedules have
+    tranches, tranches have payments and change orders.
+  → A relational model with foreign keys and constraints ENFORCES data
+    integrity at the database level. A NoSQL approach would require this
+    to be enforced in application code — which is error-prone and unsuitable
+    for a financial system.
+  → PostgreSQL has native support for transactions, which are essential
+    for the payment ledger (atomic operations: record payment + update
+    balance in a single transaction that either fully completes or fully
+    rolls back).
+
+WHY NOT JUST USE EXISTING TOOLS (HONEYBOOK + AISLE PLANNER)?
+  → HoneyBook: Tracks clients, not vendors. USD. No Indian payment customs.
+    No multi-day Indian wedding structure. No vendor quote comparison.
+    No day-of operations. No per-wedding P&L.
+  → Aisle Planner: US-centric. No Indian functions. No vendor payment
+    reconciliation. No live day-of check-in. No financial reporting.
+  → Stacking them: $120–270/month. Data still in two places. No integration
+    between them. The planner still manually transfers data.
+  → VIVAH: ₹5,000–8,000/month. One system. One data model. All connected.
+    India-first. Built for this exact use case.
+
+WHY PER-WEDDING PROFITABILITY MATTERS:
+  The founder of The Royal Knot is doing 25 weddings at several crores each.
+  Without per-wedding P&L, they are running blind. A ₹1 crore wedding that
+  required 400 team hours and 6 site visits might make less profit than a
+  ₹40 lakh wedding that ran smoothly in 150 hours. Without data, every
+  wedding feels like revenue. With VIVAH, every wedding shows its true cost.
+
+================================================================================
+ SECTION 13: WHAT WE ARE NOT BUILDING
+================================================================================
+
+These are explicitly out of scope for the hackathon prototype. They are
+acknowledged, referenced, and left for V2:
+
+  ❌ FULL GUEST MANAGEMENT SYSTEM
+     We capture guest count per function. We do not build RSVP tracking,
+     digital invitations, individual guest records, seating arrangements,
+     or dietary tracking per guest. WeddingKart and Wedd.ai do this. In
+     VIVAH we reference their integration as a V2 feature.
+
+  ❌ PAYMENT GATEWAY INTEGRATION
+     Payments are marked as paid manually with a reference number. No
+     Razorpay / Stripe / PayU integration. The financial calculation engine
+     is real; the payment capture is manual.
+
+  ❌ E-SIGNATURE (FUNCTIONAL)
+     Service agreements are generated as PDFs and the signed version is
+     uploaded back. A real DocuSign/DigiSigner integration is referenced
+     in the UI but not wired up in the prototype.
+
+  ❌ GST AND TDS COMPUTATION
+     We track amounts and note whether a vendor is GST-registered. We do
+     not compute GST per transaction or handle TDS deductions automatically.
+     These are noted in the payment record for the accountant.
+
+  ❌ WHATSAPP API INTEGRATION
+     Communications are logged manually. Real WhatsApp Business API
+     integration (auto-sending payment reminders, RFQ summaries, vendor
+     confirmations via WhatsApp) is a V2 feature.
+
+  ❌ VENDOR SELF-SERVICE PORTAL
+     Vendors cannot log in to see their schedule or submit quotes directly.
+     All vendor data is entered by the planner. V2 adds a vendor portal.
+
+  ❌ MOBILE NATIVE APP
+     Responsive web only. Native iOS/Android app is V2.
+
+  ❌ ACCOUNTING INTEGRATION
+     No Tally, Zoho Books, or QuickBooks sync. VIVAH's financial data can
+     be exported as CSV for import into accounting software. Full API
+     integration is V2.
+
+  ❌ AI / ML FEATURES
+     No AI vendor matching, no AI timeline generation, no predictive
+     analytics. Pure deterministic logic only.
+
+================================================================================
+ SECTION 14: SUCCESS CRITERIA — HOW DO WE KNOW IT WORKED
+================================================================================
+
+The prototype is a success if a JUDGE (acting as a wedding agency founder)
+can sit down at the system and in 10 minutes:
+
+  ✅ See a new enquiry come in and get captured in the system
+  ✅ Confirm a wedding and see a full task checklist auto-generate
+  ✅ Enter quotes from 3 caterers and see a side-by-side comparison
+  ✅ Select a vendor and see their payment schedule auto-create
+  ✅ Record a couple payment and see the income ledger update
+  ✅ Record a vendor payment and see the expense ledger update
+  ✅ Try to pay a vendor twice and get a hard block
+  ✅ Add a change order (extra guests) and see final settlement update
+  ✅ Open the Day-Of schedule and see a vendor marked as LATE
+  ✅ See the Founder Dashboard showing per-wedding P&L and upcoming payments
+
+If those 10 things work with real data, the prototype wins.
+
+================================================================================
+ SECTION 15: TEAM DIVISION OF WORK
+================================================================================
+
+TEAM SIZE: 4 members
+DURATION: 48 hours
+
+The work is divided by MODULE OWNERSHIP, not by frontend/backend split.
+Each person owns a full vertical slice of their modules: database schema,
+API, and UI. This avoids coordination overhead and allows parallel development.
+
+──────────────────────────────────────────────────────────────────────────────
+PERSON 1: FOUNDATION + ENQUIRY + COUPLE MANAGEMENT
+──────────────────────────────────────────────────────────────────────────────
+OWNS: Project setup, database schema, authentication, Module 1
+
+Responsibilities:
+  → Project repository setup (Next.js, Tailwind, Shadcn/UI, Prisma + Postgres)
+  → Database schema design and migration for ALL entities (this person
+    defines the data model the entire team uses — most critical early task)
+  → Authentication system (login, roles: Founder / Lead Planner / Assistant)
+  → Module 1: Enquiry capture form
+  → Module 1: Enquiry pipeline (kanban-style status board)
+  → Module 1: Couple profile page
+  → Module 1: Design references section (Pinterest/Canva link storage)
+  → Module 1: Service agreement upload
+  → Shared navigation, layout, and design system setup for all other members
+
+WHY THIS PERSON:
+  The foundation and data model work requires the strongest backend/architecture
+  thinking. All other modules depend on the schema this person defines.
+  Getting it wrong here cascades into every other module. This person also
+  sets up the shared UI component library so everyone else's screens look
+  consistent without coordination overhead.
+
+──────────────────────────────────────────────────────────────────────────────
+PERSON 2: VENDOR DIRECTORY + QUOTE COMPARISON (Module 3)
+──────────────────────────────────────────────────────────────────────────────
+OWNS: Module 3 (Vendor Directory and Quote Comparison)
+
+Responsibilities:
+  → Vendor master directory: create, view, search, filter, rate vendors
+  → Vendor category system (all Indian wedding categories pre-loaded)
+  → RFQ creation for a wedding + vendor category
+  → Structured quote entry form (category-specific fields)
+  → Side-by-side quote comparison table (the killer feature)
+  → Vendor selection flow: select winner, auto-close others
+  → On selection: auto-create vendor payment schedule (feeds into Module 4)
+  → On selection: auto-link vendor to wedding timeline (feeds into Module 5)
+  → Vendor performance history: past ratings, weddings worked, issues
+
+WHY THIS PERSON:
+  The quote comparison module is the most technically complex UI feature in
+  the system. It requires dynamic form generation (different fields per
+  category), normalization logic (computing effective per-plate price from
+  different quote structures), and the selection cascade (one action triggering
+  multiple downstream updates). This is a full module by itself.
+
+──────────────────────────────────────────────────────────────────────────────
+PERSON 3: PAYMENT ENGINE + TASK BOARD (Modules 4 + 2)
+──────────────────────────────────────────────────────────────────────────────
+OWNS: Module 4 (Payment Engine) + Module 2 (Task Board)
+
+Responsibilities:
+  → Income ledger: couple payment milestones, record payment, calculate
+    outstanding, overdue alerts
+  → Expense ledger: vendor payment tranches, record payment, double-payment
+    prevention, validate against agreed amount
+  → Change orders: add extras, link to vendor, recalculate couple final bill
+  → Per-wedding financial summary (auto-calculated, real-time)
+  → Task checklist template: pre-build the Indian wedding master template
+  → Auto-generation of tasks on wedding confirmation (from template)
+  → Task board: kanban view, list view, my tasks view
+  → Task status management: assign, update, mark done
+  → Overdue task alerts
+
+WHY THIS PERSON:
+  Module 4 (Payment Engine) is the most mathematically sensitive part of
+  the system and demands the most careful backend logic. Immutable records,
+  transaction-safe payment recording, double-payment prevention, and cascade
+  recalculation on change orders all need robust implementation. Pairing this
+  with Module 2 (which is simpler — template + task board) balances the
+  workload while keeping financial logic owned by one person who can focus
+  on getting it right.
+
+──────────────────────────────────────────────────────────────────────────────
+PERSON 4: DAY-OF COMMAND CENTER + FOUNDER DASHBOARD (Modules 5 + 6)
+──────────────────────────────────────────────────────────────────────────────
+OWNS: Module 5 (Day-Of Command Center) + Module 6 (Founder Dashboard)
+
+Responsibilities:
+  → Day-of schedule builder: create events, assign times, link vendors,
+    assign planner responsibility
+  → Live schedule view: real-time status, current event highlighted
+  → Vendor check-in: tap to mark arrived, record timestamp
+  → Late vendor detection: automated flag when expected time passes with
+    no check-in (polling or real-time update)
+  → Problem flag creation and display
+  → Live schedule adjustment (delay / done / add event)
+  → Founder dashboard: season overview metrics
+  → Wedding-by-wedding table (all weddings, sortable)
+  → Upcoming payments section (collect + pay in next 30 days)
+  → Vendor performance leaderboard
+  → Open issues aggregation
+
+WHY THIS PERSON:
+  The Day-Of Command Center is the most visually dramatic module for the
+  hackathon demo. It needs real-time feel (even if implemented with
+  polling every 5 seconds rather than true WebSockets). The Founder Dashboard
+  is pure data aggregation — pulling totals from all other modules and
+  displaying them clearly. These two together represent the "wow" and the
+  "so what" of the demo: the wow is the live check-in with late alerts;
+  the so what is the founder seeing profit per wedding at a glance.
+
+──────────────────────────────────────────────────────────────────────────────
+SHARED RESPONSIBILITIES (All 4 people):
+──────────────────────────────────────────────────────────────────────────────
+  → HOUR 0–2: All four align on data schema (Person 1 leads, others review)
+  → HOUR 2–4: All four align on API contract (what endpoints each module
+    needs, what they return — agree this before anyone writes a line of logic)
+  → HOUR 36–40: Integration session (connect all modules, test data flow
+    end-to-end from enquiry through to founder dashboard)
+  → HOUR 42–46: Bug fixing and demo data seeding (one shared Jaipur wedding
+    scenario with real vendor names, real amounts, real timeline)
+  → HOUR 46–48: Demo rehearsal (each person demos their module, Person 4
+    presents the full flow)
+
+──────────────────────────────────────────────────────────────────────────────
+48-HOUR TIMELINE:
+──────────────────────────────────────────────────────────────────────────────
+
+  HOUR 00–02: Full team — Schema alignment + API contract agreement
+  HOUR 02–04: Person 1 — Project setup and shared foundation
+              Others — Begin component-level design of their modules
+  HOUR 04–24: All four — Parallel module development (each owns their slice)
+  HOUR 24–25: Checkpoint — Each person demos their module works in isolation
+  HOUR 25–36: All four — Continue development, refinement, edge case handling
+  HOUR 36–40: All four — Integration session (connect modules, end-to-end test)
+  HOUR 40–44: All four — Bug fixing, data seeding, UI polish
+  HOUR 44–46: Demo rehearsal with sample data (Sharma-Gupta Jaipur wedding)
+  HOUR 46–48: Final fixes and submission prep
+
+================================================================================
+END OF PROJECT DESCRIPTION REPORT
+SYSTEM: VIVAH — Wedding Agency Operations Platform
+================================================================================
