@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 
-const WEDDING_ID = "cmvwrhpeu0016yengfc5z3pnt"; // Sharma-Gupta — used for back link
+const WEDDING_ID = "cmvwwz1lt00167v4nw32bj3a8"; // Sharma-Gupta — used for back link
 
 function AlertBadge({ status, minutesLate }: { status: string; minutesLate: number }) {
   if (status === "CHECKED_IN") return (

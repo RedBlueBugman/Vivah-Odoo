@@ -4,7 +4,7 @@ import { Providers } from "./providers";
 import { Sidebar } from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "VIVAH — The Royal Knot",
+  title: "VIVAH - The Royal Knot",
   description: "Wedding Operations Platform",
 };
 

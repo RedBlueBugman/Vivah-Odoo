@@ -88,6 +88,7 @@ model Enquiry {
   eventDate    DateTime?
   estimatedPax Int?
   budget       Decimal?      @db.Decimal(15, 2)
+  cuisine      String?
   status       EnquiryStatus @default(LEAD)
   createdAt    DateTime      @default(now())
 }
@@ -96,9 +97,11 @@ model Wedding {
   id           String            @id @default(cuid())
   coupleName   String
   venueCity    String
+  venueName    String?
   startDate    DateTime
   endDate      DateTime
   totalBudget  Decimal           @db.Decimal(15, 2)
+  cuisine      String?
   status       WeddingStatus     @default(PLANNING)
   functions    WeddingFunction[]
   tasks        Task[]
@@ -211,4 +214,21 @@ model ProblemFlag {
   issue     String
   severity  Severity @default(MEDIUM)
   isSolved  Boolean  @default(false)
+}
+
+enum UserRole {
+  STAFF
+  COUPLE
+  VENDOR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  weddingId String?
+  vendorId  String?
+  createdAt DateTime @default(now())
 }

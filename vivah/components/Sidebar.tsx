@@ -1,19 +1,21 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
-const WEDDING_ID = "cmvwrhpeu0016yengfc5z3pnt";
+const WEDDING_ID = "cmvwwz1lt00167v4nw32bj3a8";
 
 const NAV = [
-  { href: "/",                              label: "Dashboard",    icon: "◈" },
-  { href: "/enquiries",                     label: "Enquiries",    icon: "✉" },
-  { href: "/weddings",                      label: "Weddings",     icon: "♡" },
-  { href: "/vendors",                       label: "Vendors",      icon: "⊞" },
-  { href: `/dayof/${WEDDING_ID}`,           label: "Day-of 🔴",   icon: "⚡" },
+  { href: "/",                    label: "Dashboard",  icon: "◈" },
+  { href: "/enquiries",           label: "Enquiries",  icon: "✉" },
+  { href: "/weddings",            label: "Weddings",   icon: "♡" },
+  { href: "/vendors",             label: "Vendors",    icon: "⊞" },
+  { href: `/dayof/${WEDDING_ID}`, label: "Day-of 🔴", icon: "⚡" },
 ];
 
 export function Sidebar() {
   const path = usePathname();
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-primary text-white flex flex-col z-50">
       {/* Brand */}
@@ -44,10 +46,16 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-primary-light">
-        <p className="text-xs text-primary-light">Jaipur · Udaipur</p>
-        <p className="text-xs text-primary-light">25 weddings / season</p>
+      {/* Footer + logout */}
+      <div className="px-4 py-4 border-t border-primary-light">
+        <p className="text-xs text-primary-light mb-1">Jaipur · Udaipur</p>
+        <p className="text-xs text-primary-light mb-3">25 weddings / season</p>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full text-xs text-red-200 hover:text-white border border-primary-light hover:border-white rounded-lg py-1.5 transition-colors"
+        >
+          Sign out
+        </button>
       </div>
     </aside>
   );
