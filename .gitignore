@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Runtime data — these are auto-generated, don't commit
+backend/data.json
+backend/couples.json
+backend/data.json.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.suo
+*.user

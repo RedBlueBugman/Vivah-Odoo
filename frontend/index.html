@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Royal Knot</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fdf8f3;--surface:#fffbf7;--surface2:#fff5ec;
+  --border:#e8d8c8;--border2:#d4bfa8;
+  --gold:#b8832a;--gold2:#e6b85c;
+  --rose:#c0394d;--blush:#f7e8e8;
+  --text:#2c1a0e;--sub:#7a5c48;--muted:#a8897a;
+  --ok:#1e7c4a;--ok-bg:#e8f7ef;
+  --bad:#b82a2a;--bad-bg:#fdf0f0;
+  --warn:#96600a;--warn-bg:#fef7e8;
+  --info:#1a6080;--info-bg:#e8f4f8;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;line-height:1.5}
+h1,h2,h3,h4{font-family:'Playfair Display',Georgia,serif;font-weight:700;line-height:1.2}
+h1{font-size:2.4rem}h2{font-size:1.8rem}h3{font-size:1.2rem;color:var(--gold)}h4{font-size:1rem;color:var(--text);font-weight:600}
+p{margin:.5rem 0}b{font-weight:600}
+.wrap{max-width:1160px;margin:0 auto;padding:16px 20px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.full{grid-column:1/-1}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 2px 12px #b8832a0d}
+.card-rose{background:var(--blush);border-color:#e8c0c0}
+.card-gold{background:#fdf8ef;border-color:#e8d0a0}
+.card-inset{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.brand{font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:700;color:var(--gold);letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.brand-ring{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold2),var(--gold));display:flex;align-items:center;justify-content:center;font-size:16px}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 16px;border:none;background:none;color:var(--sub);font:500 .875rem/1 'Inter',sans-serif;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;flex-shrink:0}
+.tab:hover{color:var(--text)}.tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 16px;font:500 .875rem 'Inter',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--surface2);border-color:var(--gold)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-pri{background:var(--gold);color:#fff;border-color:var(--gold)}.btn-pri:hover:not(:disabled){background:#a0721f;border-color:#a0721f}
+.btn-rose{background:var(--rose);color:#fff;border-color:var(--rose)}.btn-rose:hover:not(:disabled){background:#a02a40}
+.btn-sm{padding:5px 12px;font-size:.8rem}.btn-xs{padding:3px 9px;font-size:.75rem}
+.btn-ghost{background:none;border-color:transparent;color:var(--sub)}.btn-ghost:hover:not(:disabled){background:var(--surface2);border-color:var(--border);color:var(--text)}
+.btn-full{width:100%;justify-content:center}
+label{display:block;font-size:.8rem;font-weight:500;color:var(--sub);margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 12px;background:var(--surface);color:var(--text);border:1px solid var(--border2);border-radius:8px;font:inherit;font-size:.9rem;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #b8832a18}
+input[readonly],input:disabled,select:disabled{background:var(--bg);opacity:.6;cursor:default}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.75rem;font-weight:600;letter-spacing:.02em}
+.badge-ok{background:var(--ok-bg);color:var(--ok)}.badge-bad{background:var(--bad-bg);color:var(--bad)}
+.badge-warn{background:var(--warn-bg);color:var(--warn)}.badge-info{background:var(--info-bg);color:var(--info)}
+.badge-neutral{background:#f0ece8;color:var(--sub)}.badge-gold{background:#fef7e0;color:var(--gold)}
+.bar{height:8px;border-radius:99px;background:#e8d8c8;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s ease}
+.bar-fill.bad{background:linear-gradient(90deg,var(--bad),#e87070)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px}
+th{text-align:left;padding:8px 12px;font:.75rem/1 'Inter',sans-serif;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border2);background:var(--bg)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:.9rem}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--surface2)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}.row-left{display:flex;flex-direction:column;gap:2px}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-size:.875rem;font-weight:500;box-shadow:0 4px 20px #0003;animation:slideIn .2s ease;max-width:320px}
+.toast.ok{background:var(--ok)}.toast.bad{background:var(--bad)}.toast.warn{background:var(--warn)}
+.hero-banner{border-radius:16px;padding:28px 28px 24px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(135deg,#3a1a0e,#6b2a1e,#3a1a0e);color:#fff;position:relative;overflow:hidden}
+.hero-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e6b85c' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
+.hero-banner *{position:relative}
+.hero-banner h1{color:#fff;font-size:2rem;margin:0}.hero-banner .sub{color:#f0d8c0;font-size:.95rem}
+.hero-banner .stat-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:8px}
+.hero-banner .stat{display:flex;flex-direction:column;gap:2px}
+.hero-banner .stat-val{font:700 1.1rem 'Playfair Display',serif;color:var(--gold2)}
+.hero-banner .stat-lbl{font-size:.75rem;color:#d0b898}
+.ph-Venue{background:#fdf0f5;color:#8b1a3a;border:1px solid #e8b0c0}
+.ph-Design{background:#f0f7ff;color:#1a4a8b;border:1px solid #b0cce8}
+.ph-Vendors{background:#fffbf0;color:#8b5a00;border:1px solid #e8d098}
+.ph-Guests{background:#f0fdf5;color:#1a6b3a;border:1px solid #a0ddb8}
+.ph-Events{background:#f8f0ff;color:#5a1a8b;border:1px solid #c8a8e8}
+.ph-Ops{background:#fff5f0;color:#8b3a1a;border:1px solid #e8b898}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:700px){.kanban{grid-template-columns:1fr}}
+.kanban-col{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:200px}
+.kanban-col-hd{font:.75rem/1 'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:12px;display:flex;justify-content:space-between}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#fdf8f3 0%,#f7ece8 50%,#fdf5e8 100%);padding:20px}
+.login-hub{width:100%;max-width:840px}
+.login-hero{background:linear-gradient(135deg,#3a1a0e,#6b2a1e 50%,#4a2a08);border-radius:20px;padding:40px;color:#fff;margin-bottom:28px;position:relative;overflow:hidden}
+.login-hero::after{content:'';font-size:120px;position:absolute;right:-10px;top:-20px;opacity:.12;line-height:1}
+.login-hero h1{font-size:2.6rem;color:#fff}
+.login-hero p{color:#e0c8b0;font-size:1rem;margin-top:8px;max-width:520px}
+.role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:560px){.role-grid{grid-template-columns:1fr}}
+.role-btn{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:20px;text-align:left;cursor:pointer;transition:all .18s;font:inherit;color:var(--text)}
+.role-btn:hover{border-color:var(--gold);box-shadow:0 4px 20px #b8832a18;transform:translateY(-2px)}
+.role-btn .role-icon{font-size:2rem;margin-bottom:8px}
+.role-btn h4{color:var(--text);margin-bottom:4px}
+.role-btn p{font-size:.82rem;color:var(--muted);line-height:1.45}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:420px;width:100%}
+.login-card h2{font-size:1.6rem;margin-bottom:4px}
+.login-card .hint{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-ok{background:var(--ok)}.dot-bad{background:var(--bad)}.dot-warn{background:var(--warn)}.dot-neutral{background:var(--muted)}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-hd h3{margin:0}
+.tl-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tl-body{flex:1}.tl-date{font-size:.75rem;color:var(--muted)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+@media(max-width:600px){.wrap{padding:12px}h1{font-size:1.8rem}.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+'use strict';
+const {useState,useEffect,useRef,useCallback}=React;
+const html=htm.bind(React.createElement);
+
+/* ── helpers ── */
+const TODAY='2026-10-31';
+const fmtDate=d=>{try{return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}};
+const fmtMoney=n=>n>=100?'Rs.'+(n/100).toFixed(2)+' Cr':'Rs.'+(+n).toFixed(2)+' L';
+const hm=t=>{const[h,m]=(t||'00:00').split(':');return +h*60+ +m;};
+const fm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ── static data ── */
+const CITIES=['Udaipur','Jaipur','Mumbai','Delhi','Hyderabad','Bangalore'];
+const THEMES=['Royal Heritage','Beach Chic','Floral Garden','Mughal Nights','Modern Minimal'];
+const THEME_COLS={
+  'Royal Heritage':['#6b2a1e','#e6b85c'],
+  'Beach Chic':['#1d5a7a','#e8d898'],
+  'Floral Garden':['#7a2a5a','#f7c8d8'],
+  'Mughal Nights':['#1a1a5a','#c8a040'],
+  'Modern Minimal':['#3a3a3a','#e0d8d0'],
+};
+const THEME_PHOTOS={
+  'Royal Heritage':'images/royal.webp',
+  'Beach Chic':'images/beach.jpeg',
+  'Floral Garden':'images/floral.jpg',
+  'Mughal Nights':'images/mughal.jpg',
+  'Modern Minimal':'images/modern minimal.jpg',
+};
+const THEME_DESC={
+  'Royal Heritage':'Opulent Rajputana palace setting — deep reds, gold mandaps, heritage pillars and royal floral drapes.',
+  'Beach Chic':'Breezy outdoor ceremony — turquoise accents, driftwood decor, soft linens and sea-view backdrops.',
+  'Floral Garden':'Lush bloom-filled venue — cascading florals, pastel petals, romantic arches and garden lanterns.',
+  'Mughal Nights':'Regal Mughal-era grandeur — indigo and gold, geometric screens, candlelit courtyards.',
+  'Modern Minimal':'Clean contemporary elegance — neutral tones, sculptural florals, sleek geometry and soft lighting.',
+};
+const PKGS=['Full-Service','Day-of Coordination','Partial Planning'];
+const SOURCES=['Call','Instagram','WhatsApp','Referral','Website','Friend'];
+const VENDOR_CATS=['Venue','Decor','Catering','Music','Photography','Beauty','Transport','Pandit','Other'];
+const OWN=['Riya','Arjun','Neha','Sameer'];
+const STG=['To Plan','In Progress','Done'];
+
+const DECOR_ITEMS=['Floral mandap','Fairy-light canopy','Heritage pillars','Floating candles','Rangoli entrance','Peacock props','Flower wall backdrop','Rose petal aisle'];
+const DECOR_PHOTOS={
+  'Floral mandap':'images/floral mandap.jpg',
+  'Fairy-light canopy':'images/fairy light.webp',
+  'Heritage pillars':'images/heritage pillars.jpg',
+  'Floating candles':'images/floating candle.jpg',
+  'Rangoli entrance':'images/rangoli.jpg',
+  'Peacock props':'images/peacock.jpg',
+  'Flower wall backdrop':'images/flower backdrop.jpg',
+  'Rose petal aisle':'images/rose petals aisle.jpg',
+};
+
+const MENU=[
+  ['Paneer tikka','Starters',120],['Dahi kebab','Starters',110],['Crispy corn chaat','Starters',90],
+  ['Dal baati churma','Mains',260],['Laal maas','Mains',340],['Ker sangri','Mains',180],['Biryani','Mains',230],
+  ['Live chaat counter','Live Stations',150],['Pasta counter','Live Stations',140],
+  ['Jalebi rabri','Desserts',130],['Gulab jamun','Desserts',90],['Ice cream bar','Desserts',100],
+];
+const CATERERS=[
+  {v:'Marwar Rasoi',p:1450,x:20000,m:'Rajasthani classics, 5 starters',i:[1,1,0,1,0]},
+  {v:'Spice Route Catering',p:1680,x:35000,m:'Pan-regional, live chaat and pasta',i:[1,1,1,1,1]},
+  {v:'Rajputana Feast',p:1590,x:25000,m:'Royal thali, 6 starters',i:[1,0,1,1,1]},
+];
+const CATERER_INCL=['Live counters','Dessert station','Service staff','Crockery','Welcome drinks'];
+
+const PLAN_TASKS='Venue:Shortlist and visit venues:Riya;Venue:Book venue and sign contract:Riya;Venue:Floor plan and layout:Arjun;Venue:Permits and fire NOC:Sameer;Design:Theme moodboard:Neha;Design:Mandap design:Neha;Design:Stage and backdrop:Neha;Design:Floral plan:Neha;Design:Lighting plan:Arjun;Design:Invitation suite:Neha;Vendors:Hire caterer:Riya;Vendors:Hire photographer:Riya;Vendors:Book DJ and band:Sameer;Vendors:Book makeup artists:Neha;Vendors:Baraat transport:Sameer;Vendors:Guest accommodation:Arjun;Vendors:Pandit and ritual items:Riya;Guests:RSVP tracking:Arjun;Guests:Seating chart:Arjun;Guests:Welcome kits:Neha;Events:Mehendi run-sheet:Neha;Events:Sangeet choreography:Sameer;Events:Haldi setup:Neha;Events:Ceremony run-sheet:Riya;Events:Reception plan:Riya;Ops:Dress rehearsal:Riya;Ops:Vendor briefing call:Arjun;Ops:Day-of command desk:Riya;Ops:Final billing and closure:Sameer'.split(';').map(x=>x.split(':'));
+
+const DEFAULT_SCHED=[
+  {t:'10:00',e:'Mehendi ceremony',o:'Neha'},
+  {t:'14:00',e:'Haldi ceremony',o:'Neha'},
+  {t:'16:00',e:'Sangeet sound check',o:'Sameer'},
+  {t:'18:30',e:'Baraat procession',o:'Arjun'},
+  {t:'19:30',e:'Jaimala (garland exchange)',o:'Riya'},
+  {t:'21:00',e:'Pheras (wedding vows)',o:'Riya'},
+  {t:'22:30',e:'Reception and dinner',o:'Neha'},
+];
+
+/* ── model helpers ── */
+const mkVendor=(n,c,a,p,b,r,e)=>({id:uid(),n,c,a:+a,p:+p,b:+b,r:+r,e:e||'09:00',ar:null,notes:''});
+const mkPay=(val,dates,flags)=>[
+  {id:'p1',n:'Booking deposit (30%)',pct:30,paid:!!flags[0],due:dates[0],ref:'',paidAt:''},
+  {id:'p2',n:'Advance payment (40%)',pct:40,paid:!!flags[1],due:dates[1],ref:'',paidAt:''},
+  {id:'p3',n:'Final payment (30%)',pct:30,paid:!!flags[2],due:dates[2],ref:'',paidAt:''},
+];
+const mkBase=o=>Object.assign({signed:null,tasks:[],sched:[],vs:[],ex:[],iss:[],rfq:[],hrs:0,rsvp:{y:0,n:0,maybe:0},notes:'',design:{theme:'Royal Heritage',decor:[],menu:[],notes:''}},o);
+const genPlan=w=>{
+  w.tasks=PLAN_TASKS.map((x,i)=>({id:i,ph:x[0],t:x[1],o:x[2],s:'To Plan'}));
+  w.sched=DEFAULT_SCHED.map(x=>({id:uid(),t:x.t,e:x.e,o:x.o}));
+};
+const wRev=w=>w.val+(w.ex||[]).reduce((s,e)=>s+e.amt,0);
+const wCost=w=>w.vs.reduce((s,v)=>s+(v.b||v.a),0)+(w.hrs||0)*0.015;
+
+function seedData(){
+  const w1=mkBase({id:'w1',c:'Aarav and Meera',city:'Udaipur',d:'2026-12-12',g:420,theme:'Royal Heritage',bud:350,pkg:'Full-Service',st:'Confirmed',src:'Instagram',signed:{n:'Meera Shah',at:'2026-10-02'},val:320,hrs:260,rsvp:{y:268,n:22,maybe:130},
+    rfq:[{id:uid(),cat:'Catering',st:'open',q:CATERERS.map(c=>({...c,s:null}))}],
+    pay:mkPay(320,['2026-10-05','2026-11-12','2026-12-19'],[1,1,0]),
+    vs:[mkVendor('City Palace Hall','Venue',80,40,0,4.9,'09:00'),mkVendor('Regal Blooms Decor','Decor',58,20,0,4.6,'12:00'),mkVendor('DJ Beats','Music',6,2,0,3.8,'17:00'),mkVendor('Shehnai Drummers','Music',3,1,0,4.8,'17:30'),mkVendor('Glam Makeup Studio','Beauty',4,2,0,4.5,'08:00'),mkVendor('Lens Story Photography','Photography',9,3,0,4.7,'10:00')],
+    design:{theme:'Royal Heritage',decor:['Floral mandap','Heritage pillars'],menu:['Paneer tikka','Dal baati churma','Jalebi rabri'],notes:''},
+  });
+  genPlan(w1);w1.tasks.forEach((t,i)=>{t.s=i<8?'Done':i<14?'In Progress':'To Plan';});
+  const w2=mkBase({id:'w2',c:'Kabir and Anaya',city:'Jaipur',d:'2026-11-21',g:250,theme:'Mughal Nights',bud:120,pkg:'Full-Service',st:'Confirmed',src:'WhatsApp',signed:{n:'Anaya Rao',at:'2026-10-11'},val:85,hrs:110,rsvp:{y:190,n:15,maybe:45},rfq:[],
+    pay:mkPay(85,['2026-10-14','2026-10-21','2026-11-28'],[1,0,0]),
+    vs:[mkVendor('Amber Fort Decor','Decor',24,10,0,4.2,'11:00'),mkVendor('Raga Beats DJ','Music',4,1,0,4.1,'17:00'),mkVendor('Royal Caterers','Catering',30,10,0,4.4,'15:00')],
+    design:{theme:'Mughal Nights',decor:[],menu:[],notes:''},
+  });
+  genPlan(w2);w2.tasks.forEach((t,i)=>{t.s=i<18?'Done':'In Progress';});
+  const w3=mkBase({id:'w3',c:'Karan and Isha',city:'Jaipur',d:'2026-10-10',g:380,theme:'Floral Garden',bud:260,pkg:'Full-Service',st:'Completed',src:'Call',signed:{n:'Isha Jain',at:'2026-08-01'},val:210,hrs:420,rsvp:{y:395,n:5,maybe:0},rfq:[],
+    ex:[{id:uid(),d:'60 extra plates',amt:1.0,at:TODAY}],
+    pay:mkPay(210,['2026-08-03','2026-09-10','2026-10-17'],[1,1,0]),
+    vs:[mkVendor('Pearl Palace Venue','Venue',60,60,64,4.5,'09:00'),mkVendor('Regal Blooms Decor','Decor',48,48,52,4.6,'12:00'),mkVendor('DJ Beats','Music',5,5,6,3.6,'17:00'),mkVendor('Spice Route Catering','Catering',62,40,68,4.7,'15:00')],
+    design:{theme:'Floral Garden',decor:['Flower wall backdrop','Rose petal aisle'],menu:['Dal baati churma','Live chaat counter','Gulab jamun'],notes:''},
+  });
+  genPlan(w3);w3.tasks.forEach(t=>{t.s='Done';});
+  const w4=mkBase({id:'w4',c:'Rohan and Tara',city:'Udaipur',d:'2027-02-06',g:400,theme:'Beach Chic',bud:300,pkg:'Full-Service',st:'Enquiry',src:'Instagram',val:300,pay:mkPay(300,['2026-11-15','2027-01-06','2027-02-13'],[0,0,0]),design:{theme:'Beach Chic',decor:[],menu:[],notes:''}});
+  return {w:[w1,w2,w3,w4]};
+}
+
+/* ── API ── */
+const API_BASE=new URLSearchParams(location.search).get('api')||'http://localhost:4000';
+let TOK=null,VER=0,BUSY=0,QUEUE=Promise.resolve();
+const apiFetch=(method,path,body)=>fetch(API_BASE+path,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+TOK},body:body?JSON.stringify(body):undefined}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Request failed ('+r.status+')');return j;});
+const pushState=(next,onErr)=>{BUSY++;QUEUE=QUEUE.then(()=>apiFetch('PUT','/api/state',{state:next,version:VER})).then(j=>{VER=j.version;}).catch(onErr).then(()=>{BUSY--;});};
+const errMsg=e=>e.message==='Failed to fetch'?'Cannot reach the server. Is the backend running on port 4000?':e.message;
+
+/* ── toast ── */
+let _toastSet=null;
+const toast=(msg,type,dur)=>{if(!_toastSet)return;const id=uid();_toastSet(ts=>[...ts,{id,msg,type:type||'ok'}]);setTimeout(()=>_toastSet(ts=>ts.filter(t=>t.id!==id)),dur||3000);};
+function ToastContainer(){
+  const[toasts,setToasts]=useState([]);
+  useEffect(()=>{_toastSet=setToasts;return()=>{_toastSet=null;};},[]);
+  return html`<div className="toast-wrap">${toasts.map(t=>html`<div key=${t.id} className=${'toast '+t.type}>${t.msg}</div>`)}</div>`;
+}
+
+/* ── shared components ── */
+function Field({label,value,onChange,type,options,readOnly,placeholder}){
+  return html`<div className="field">
+    ${label&&html`<label>${label}</label>`}
+    ${options
+      ?html`<select value=${value||''} disabled=${readOnly} onChange=${e=>onChange&&onChange(e.target.value)}>${options.map(o=>html`<option key=${o} value=${o}>${o}</option>`)}</select>`
+      :html`<input type=${type||'text'} value=${value==null?'':value} readOnly=${readOnly} placeholder=${placeholder||''} onChange=${e=>!readOnly&&onChange&&onChange(type==='number'?+e.target.value:e.target.value)}/>`}
+  </div>`;
+}
+const Badge=({type,children})=>html`<span className=${'badge badge-'+(type||'neutral')}>${children}</span>`;
+const wStatusBadge=w=>{
+  if(w.st==='Completed')return html`<${Badge} type="ok">Completed<//>`;
+  if(w.st==='Confirmed')return html`<${Badge} type="info">Confirmed<//>`;
+  if(w.st==='Agreement')return html`<${Badge} type="warn">Agreement sent<//>`;
+  return html`<${Badge} type="neutral">Enquiry<//>`;
+};
+
+/* ── nav config ── */
+const NAV={couple:['overview','design','quotes','payments','day'],planner:['enquiries','overview','design','quotes','plan','day','payments','billing'],founder:['dashboard','overview','plan','payments','billing'],vendor:['day']};
+const TAB_LABEL={overview:'Wedding',design:'Design',quotes:'Quotes',payments:'Payments',day:'Big Day',enquiries:'Enquiries',plan:'Plan Board',billing:'Billing',dashboard:'Dashboard'};
+
+/* ── role config ── */
+const STAFF_ROLES=[
+  {id:'planner',icon:'📋',title:'Planner',color:'#1e7c4a',desc:'Manage enquiries, plan board, vendor quotes, the big day and billing.'},
+  {id:'founder',icon:'👑',title:'Studio Founder',color:'#b8832a',desc:'Season P&L, profit per wedding, cashflow and vendor performance.'},
+  {id:'vendor',icon:'🎺',title:'Vendor',color:'#1a6080',desc:'Check in on the day and view the event run-sheet.'},
+];
+
+/* ════════════════════════════════════════
+   LOGIN HUB — main portal chooser
+════════════════════════════════════════ */
+function LoginHub(){
+  const[view,setView]=useState(null); // null | 'couple-choose' | 'couple-login' | 'couple-register' | staff role id
+  if(view==='couple-choose') return html`<${CouplePortal} onBack=${()=>setView(null)}/>`;
+  if(view==='couple-login')  return html`<${CoupleLogin}  onBack=${()=>setView('couple-choose')}/>`;
+  if(view==='couple-register') return html`<${CoupleRegisterFlow} onBack=${()=>setView('couple-choose')}/>`;
+  const staffRole=STAFF_ROLES.find(r=>r.id===view);
+  if(staffRole) return html`<${StaffLogin} role=${staffRole} onBack=${()=>setView(null)}/>`;
+
+  return html`<div className="login-wrap"><div className="login-hub">
+    <div className="login-hero">
+      <div style=${{fontSize:'.85rem',color:'#c8a890',marginBottom:8,fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase'}}>The Royal Knot</div>
+      <h1>Wedding planning,<br/>end to end.</h1>
+      <p>One platform for enquiries, design, vendor quotes, the big day, and the final invoice.</p>
+    </div>
+    <p style=${{color:'var(--muted)',marginBottom:16,fontWeight:500}}>Who are you?</p>
+    <div className="role-grid">
+      <!-- Couple card — prominent, two actions -->
+      <div className="role-btn" style=${{gridColumn:'1/-1',display:'flex',flexDirection:'column',gap:14}}>
+        <div style=${{display:'flex',alignItems:'center',gap:14}}>
+          <div className="role-icon">💍</div>
+          <div>
+            <h4>Couple</h4>
+            <p>Sign your agreement, design your wedding, track payments and the big day.</p>
+          </div>
+        </div>
+        <div style=${{display:'flex',gap:10}}>
+          <button className="btn btn-pri" style=${{flex:1}} onClick=${()=>setView('couple-login')}>Sign in to my wedding</button>
+          <button className="btn" style=${{flex:1,borderColor:'var(--rose)',color:'var(--rose)'}} onClick=${()=>setView('couple-register')}>Register new wedding</button>
+        </div>
+      </div>
+      ${STAFF_ROLES.map(r=>html`<button key=${r.id} className="role-btn" onClick=${()=>setView(r.id)}>
+        <div className="role-icon">${r.icon}</div>
+        <h4>${r.title}</h4>
+        <p>${r.desc}</p>
+      </button>`)}
+    </div>
+  </div></div>`;
+}
+
+/* ── Couple portal — sign in or register ── */
+function CouplePortal({onBack}){
+  return html`<div className="login-wrap"><div style=${{width:'100%',maxWidth:480}}>
+    <button className="btn btn-ghost btn-sm" onClick=${onBack} style=${{marginBottom:20}}>Back</button>
+    <div className="login-card">
+      <div style=${{fontSize:'2rem',marginBottom:12}}>💍</div>
+      <h2>Couple portal</h2>
+      <p className="hint">Already registered? Sign in. New here? Register your wedding.</p>
+      <button className="btn btn-pri btn-full" style=${{marginBottom:10}} onClick=${()=>window._coupleView('login')}>Sign in to my wedding</button>
+      <button className="btn btn-full" style=${{borderColor:'var(--rose)',color:'var(--rose)'}} onClick=${()=>window._coupleView('register')}>Register new wedding</button>
+    </div>
+  </div></div>`;
+}
+
+/* ── Couple login ── */
+function CoupleLogin({onBack}){
+  const[email,setEmail]=useState('');
+  const[pw,setPw]=useState('');
+  const[err,setErr]=useState('');
+  const[loading,setLoading]=useState(false);
+  const ref=useRef();
+  useEffect(()=>{ref.current&&ref.current.focus();},[]);
+
+  const doLogin=async()=>{
+    if(!email.trim()||!pw.trim()){setErr('Email and password are required.');return;}
+    setLoading(true);setErr('');
+    try{
+      const r=await fetch(API_BASE+'/api/couple/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.trim().toLowerCase(),password:pw})});
+      const j=await r.json();
+      if(!r.ok)throw new Error(j.error||'Login failed');
+      TOK=j.token;
+      window._rkLogin&&window._rkLogin(j.token,'couple',j.wid);
+    }catch(e){setErr(errMsg(e));setLoading(false);}
+  };
+
+  return html`<div className="login-wrap"><div style=${{width:'100%',maxWidth:420}}>
+    <button className="btn btn-ghost btn-sm" onClick=${onBack} style=${{marginBottom:20}}>Back</button>
+    <div className="login-card">
+      <div style=${{fontSize:'2rem',marginBottom:12}}>💍</div>
+      <h2>Sign in</h2>
+      <p className="hint">Sign in to your wedding dashboard.</p>
+      <div className="field">
+        <label>Email address</label>
+        <input ref=${ref} type="email" value=${email} placeholder="you@example.com" onChange=${e=>setEmail(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&!loading&&doLogin()}/>
+      </div>
+      <div className="field">
+        <label>Password</label>
+        <input type="password" value=${pw} placeholder="Your password" onChange=${e=>setPw(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&!loading&&doLogin()}/>
+      </div>
+      ${err&&html`<p style=${{color:'var(--bad)',fontSize:'.85rem',marginBottom:12}}>${err}</p>`}
+      <button className="btn btn-pri btn-full" onClick=${doLogin} disabled=${loading}>${loading?'Signing in...':'Sign in'}</button>
+      <div style=${{marginTop:16,padding:'12px 14px',background:'var(--bg)',borderRadius:8,border:'1px solid var(--border)',cursor:'pointer'}} onClick=${()=>{setEmail('demo@royalknot.com');setPw('couple123');}}>
+        <p style=${{fontSize:'.72rem',fontWeight:600,color:'var(--sub)',marginBottom:4}}>Demo account — click to fill</p>
+        <p style=${{fontSize:'.8rem',color:'var(--text)',margin:0}}>demo@royalknot.com / couple123</p>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+/* ── Staff login (planner / founder / vendor) ── */
+function StaffLogin({role,onBack}){
+  const[pw,setPw]=useState('');
+  const[err,setErr]=useState('');
+  const[loading,setLoading]=useState(false);
+  const ref=useRef();
+  useEffect(()=>{ref.current&&ref.current.focus();},[]);
+  const doLogin=async()=>{
+    if(!pw.trim()){setErr('Password is required.');return;}
+    setLoading(true);setErr('');
+    try{
+      const r=await fetch(API_BASE+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:role.id,password:pw})});
+      const j=await r.json();
+      if(!r.ok)throw new Error(j.error||'Login failed');
+      TOK=j.token;
+      window._rkLogin&&window._rkLogin(j.token,role.id,null);
+    }catch(e){setErr(errMsg(e));setLoading(false);}
+  };
+  return html`<div className="login-wrap"><div style=${{width:'100%',maxWidth:420}}>
+    <button className="btn btn-ghost btn-sm" onClick=${onBack} style=${{marginBottom:20}}>Back</button>
+    <div className="login-card">
+      <div style=${{fontSize:'2rem',marginBottom:12}}>${role.icon}</div>
+      <h2>${role.title}</h2>
+      <p className="hint">${role.desc}</p>
+      <div className="field">
+        <label>Password</label>
+        <input ref=${ref} type="password" value=${pw} placeholder="Enter your password" onChange=${e=>setPw(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&!loading&&doLogin()}/>
+      </div>
+      ${err&&html`<p style=${{color:'var(--bad)',fontSize:'.85rem',marginBottom:12}}>${err}</p>`}
+      <button className="btn btn-pri btn-full" onClick=${doLogin} disabled=${loading}>${loading?'Signing in...':'Sign in'}</button>
+      <p style=${{color:'var(--muted)',fontSize:'.75rem',marginTop:14,textAlign:'center'}}>Demo: <b>${role.id}123</b></p>
+    </div>
+  </div></div>`;
+}
+
+/* ── Couple registration flow (wizard + account creation) ── */
+function CoupleRegisterFlow({onBack}){
+  const[step,setStep]=useState(1);
+  const[f,setF]=useState({
+    coupleNames:'',email:'',password:'',confirm:'',
+    phone:'',d:'2027-06-01',city:'Udaipur',
+    g:150,theme:'Royal Heritage',bud:200,pkg:'Full-Service',
+    decor:[],menu:[],notes:'',
+  });
+  const[err,setErr]=useState('');
+  const[loading,setLoading]=useState(false);
+  const sf=(k,v)=>setF(p=>({...p,[k]:v}));
+  const togDecor=item=>setF(p=>({...p,decor:p.decor.includes(item)?p.decor.filter(x=>x!==item):[...p.decor,item]}));
+  const togMenu=item=>setF(p=>({...p,menu:p.menu.includes(item)?p.menu.filter(x=>x!==item):[...p.menu,item]}));
+  const plateCost=f.menu.reduce((s,m)=>{const r=MENU.find(x=>x[0]===m);return s+(r?r[2]:0);},0);
+
+  const steps=[
+    {n:1,label:'Your account'},
+    {n:2,label:'Wedding details'},
+    {n:3,label:'Design'},
+    {n:4,label:'Food & submit'},
+  ];
+
+  const canNext={
+    1:f.coupleNames.trim().length>1&&f.email.includes('@')&&f.password.length>=6&&f.password===f.confirm,
+    2:f.g>0&&f.bud>0,
+    3:true,
+    4:true,
+  };
+
+  const submit=async()=>{
+    setErr('');setLoading(true);
+    try{
+      // 1. Get current state to add the wedding to it
+      const stateRes=await fetch(API_BASE+'/api/state',{headers:{Authorization:'Bearer placeholder'}});
+      // State requires auth — we'll use a temp approach: register first, then push state
+      // Step 1: create couple account (no wedding yet — we'll push state after)
+      const newId='w'+uid();
+      // First register to get a token
+      const regRes=await fetch(API_BASE+'/api/couple/register',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:f.email.trim().toLowerCase(),password:f.password,wid:newId,name:f.coupleNames.trim()}),
+      });
+      const regJ=await regRes.json();
+      if(!regRes.ok)throw new Error(regJ.error||'Registration failed');
+      TOK=regJ.token;
+
+      // Step 2: fetch current state with our new token
+      const sRes=await fetch(API_BASE+'/api/state',{headers:{Authorization:'Bearer '+TOK}});
+      const sJ=await sRes.json();
+      let state=sJ.state;
+      let ver=sJ.version;
+      if(!state){
+        // seed if empty
+        state={w:[]};ver=0;
+      }
+
+      // Step 3: build and prepend the new wedding
+      const payDates=[
+        new Date(new Date(f.d).setMonth(new Date(f.d).getMonth()-3)).toISOString().slice(0,10),
+        new Date(new Date(f.d).setMonth(new Date(f.d).getMonth()-1)).toISOString().slice(0,10),
+        new Date(new Date(f.d).setDate(new Date(f.d).getDate()+14)).toISOString().slice(0,10),
+      ];
+      const newWedding=mkBase({
+        id:newId,c:f.coupleNames.trim(),city:f.city,d:f.d,g:f.g,
+        theme:f.theme,bud:f.bud,pkg:f.pkg,
+        st:'Enquiry',src:'Self-registered',val:f.bud,phone:f.phone,
+        pay:mkPay(0,payDates,[0,0,0]),
+        design:{theme:f.theme,decor:f.decor,menu:f.menu,notes:f.notes},
+        notes:f.notes,
+      });
+      const newState={w:[newWedding,...state.w]};
+
+      // Step 4: push state — backend allows couple to add new weddings via register flow
+      // We use planner-style PUT but couple role allows new weddings only if prev was null
+      // Since prev.w.length check only applies when prev exists, first push will succeed
+      const putRes=await fetch(API_BASE+'/api/state',{
+        method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+TOK},
+        body:JSON.stringify({state:newState,version:ver}),
+      });
+      const putJ=await putRes.json();
+      if(!putRes.ok)throw new Error(putJ.error||'Could not save wedding');
+
+      // Step 5: boot the app
+      toast('Welcome to The Royal Knot! Your wedding has been registered.','ok',4000);
+      window._rkLogin&&window._rkLogin(TOK,'couple',newId);
+    }catch(e){setErr(errMsg(e));setLoading(false);}
+  };
+
+  return html`<div style=${{minHeight:'100vh',background:'linear-gradient(160deg,#fdf8f3,#f7ece8,#fdf5e8)',padding:'20px'}}>
+    <div style=${{maxWidth:680,margin:'0 auto'}}>
+      <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
+        <div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.4rem',color:'var(--gold)',fontWeight:700}}>💍 The Royal Knot</div>
+        <button className="btn btn-ghost btn-sm" onClick=${onBack}>Back</button>
+      </div>
+
+      <!-- Step indicator -->
+      <div style=${{display:'flex',gap:0,marginBottom:36,position:'relative'}}>
+        <div style=${{position:'absolute',top:16,left:'10%',right:'10%',height:2,background:'var(--border)',zIndex:0}}></div>
+        ${steps.map(s=>html`<div key=${s.n} style=${{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',zIndex:1}}>
+          <div style=${{
+            width:32,height:32,borderRadius:'50%',
+            background:step>=s.n?'var(--gold)':'var(--surface)',
+            border:'2px solid '+(step>=s.n?'var(--gold)':'var(--border2)'),
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontWeight:700,fontSize:'.85rem',
+            color:step>=s.n?'#fff':'var(--muted)',transition:'all .2s',
+          }}>${step>s.n?'✓':s.n}</div>
+          <div style=${{fontSize:'.72rem',color:step===s.n?'var(--gold)':'var(--muted)',fontWeight:step===s.n?600:400,textAlign:'center'}}>${s.label}</div>
+        </div>`)}
+      </div>
+
+      <div className="card" style=${{padding:32}}>
+
+        ${step===1&&html`<div>
+          <h2 style=${{marginBottom:4}}>Create your account</h2>
+          <p style=${{color:'var(--muted)',marginBottom:24}}>You'll use this email and password to sign in to your wedding dashboard anytime.</p>
+          <div className="grid g2">
+            <div style=${{gridColumn:'1/-1'}}><${Field} label="Couple names *" value=${f.coupleNames} onChange=${v=>sf('coupleNames',v)} placeholder="e.g. Priya and Rahul"/></div>
+            <${Field} label="Email address *" value=${f.email} onChange=${v=>sf('email',v)} placeholder="your@email.com"/>
+            <${Field} label="Phone number" value=${f.phone} onChange=${v=>sf('phone',v)} placeholder="+91 98xxx xxxxx"/>
+            <${Field} label="Password * (min 6 chars)" value=${f.password} type="password" onChange=${v=>sf('password',v)} placeholder="Create a password"/>
+            <${Field} label="Confirm password *" value=${f.confirm} type="password" onChange=${v=>sf('confirm',v)} placeholder="Repeat password"/>
+          </div>
+          ${f.password&&f.confirm&&f.password!==f.confirm&&html`<p style=${{color:'var(--bad)',fontSize:'.85rem',marginTop:8}}>Passwords do not match.</p>`}
+        </div>`}
+
+        ${step===2&&html`<div>
+          <h2 style=${{marginBottom:4}}>Your wedding details</h2>
+          <p style=${{color:'var(--muted)',marginBottom:24}}>Help your planner understand what you're planning.</p>
+          <div className="grid g2">
+            <${Field} label="Wedding date *" type="date" value=${f.d} onChange=${v=>sf('d',v)}/>
+            <${Field} label="City" value=${f.city} onChange=${v=>sf('city',v)} options=${CITIES}/>
+            <${Field} label="Expected guests *" type="number" value=${f.g} onChange=${v=>sf('g',Math.max(1,+v||1))}/>
+            <${Field} label="Max budget (Rs. L) *" type="number" value=${f.bud} onChange=${v=>sf('bud',Math.max(1,+v||1))}/>
+            <${Field} label="Package" value=${f.pkg} onChange=${v=>sf('pkg',v)} options=${PKGS}/>
+          </div>
+        </div>`}
+
+        ${step===3&&html`<div>
+          <h2 style=${{marginBottom:4}}>Design preferences</h2>
+          <p style=${{color:'var(--muted)',marginBottom:20}}>Pick a theme and any decor elements you love.</p>
+          <label style=${{marginBottom:10,display:'block'}}>Wedding theme</label>
+          <div style=${{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:10,marginBottom:20}}>
+            ${THEMES.map(t=>{
+              const isSel=f.theme===t;
+              return html`<button key=${t} onClick=${()=>sf('theme',t)}
+                style=${{position:'relative',borderRadius:10,overflow:'hidden',border:isSel?'3px solid var(--text)':'3px solid transparent',cursor:'pointer',padding:0,background:'none',boxShadow:isSel?'0 0 0 2px var(--gold)':'none'}}>
+                <img src=${THEME_PHOTOS[t]} alt=${t} style=${{width:'100%',height:90,objectFit:'cover',display:'block',filter:isSel?'none':'brightness(.8)'}}/>
+                <div style=${{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(0,0,0,.65),transparent 50%)',display:'flex',alignItems:'flex-end',padding:'8px'}}>
+                  <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'.78rem',fontWeight:700,color:'#fff'}}>${t}</span>
+                </div>
+                ${isSel&&html`<div style=${{position:'absolute',top:5,right:5,background:'var(--gold)',color:'#fff',borderRadius:99,width:20,height:20,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.7rem',fontWeight:700}}>✓</div>`}
+              </button>`;
+            })}
+          </div>
+          <label style=${{marginBottom:10,display:'block'}}>Decor ideas (optional)</label>
+          <div style=${{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:8}}>
+            ${DECOR_ITEMS.map(item=>{
+              const on=f.decor.includes(item);
+              return html`<button key=${item} onClick=${()=>togDecor(item)}
+                style=${{position:'relative',borderRadius:8,overflow:'hidden',border:on?'3px solid var(--rose)':'3px solid transparent',cursor:'pointer',padding:0,background:'none'}}>
+                <img src=${DECOR_PHOTOS[item]} alt=${item} style=${{width:'100%',height:80,objectFit:'cover',display:'block',filter:on?'none':'brightness(.75)'}}/>
+                <div style=${{position:'absolute',inset:0,background:on?'rgba(192,57,77,.15)':'rgba(0,0,0,.4)',display:'flex',alignItems:'flex-end',padding:'6px'}}>
+                  <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'.72rem',fontWeight:700,color:'#fff'}}>${item}</span>
+                </div>
+                ${on&&html`<div style=${{position:'absolute',top:4,right:4,background:'var(--rose)',color:'#fff',borderRadius:99,width:18,height:18,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.65rem',fontWeight:700}}>✓</div>`}
+              </button>`;
+            })}
+          </div>
+          <div className="field" style=${{marginTop:16}}>
+            <label>Special notes or vision (optional)</label>
+            <textarea rows="3" value=${f.notes} placeholder="e.g. We love outdoor settings, lots of marigolds..." onChange=${e=>sf('notes',e.target.value)} style=${{resize:'vertical'}}></textarea>
+          </div>
+        </div>`}
+
+        ${step===4&&html`<div>
+          <h2 style=${{marginBottom:4}}>Food preferences</h2>
+          <p style=${{color:'var(--muted)',marginBottom:20}}>Pick dishes you'd like. Your planner uses this for catering quotes.</p>
+          ${['Starters','Mains','Live Stations','Desserts'].map(cat=>html`<div key=${cat} style=${{marginBottom:16}}>
+            <div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8}}>${cat}</div>
+            <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
+              ${MENU.filter(x=>x[1]===cat).map(([name,_,price])=>{
+                const on=f.menu.includes(name);
+                return html`<button key=${name} onClick=${()=>togMenu(name)}
+                  style=${{padding:'7px 14px',borderRadius:99,border:on?'2px solid var(--gold)':'1px solid var(--border2)',background:on?'var(--gold)':'var(--surface)',color:on?'#fff':'var(--text)',font:'500 .82rem Inter,sans-serif',cursor:'pointer',transition:'all .15s'}}>
+                  ${name} · Rs.${price}
+                </button>`;
+              })}
+            </div>
+          </div>`)}
+          ${plateCost>0&&html`<div style=${{background:'var(--bg)',borderRadius:10,padding:'12px 16px',border:'1px solid var(--border)',marginBottom:20}}>
+            <div style=${{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style=${{color:'var(--sub)',fontSize:'.9rem'}}>Per plate</span><b>Rs.${plateCost}</b></div>
+            <div style=${{display:'flex',justifyContent:'space-between'}}><span style=${{color:'var(--sub)',fontSize:'.9rem'}}>For ${f.g} guests</span><b style=${{color:'var(--gold)'}}>${fmtMoney(plateCost*f.g/1e5)}</b></div>
+          </div>`}
+
+          <!-- Summary -->
+          <div style=${{background:'#fdf8ef',border:'1px solid #e8d0a0',borderRadius:12,padding:'16px 18px',marginTop:8}}>
+            <div style=${{fontWeight:700,marginBottom:10,color:'var(--gold)',fontFamily:"'Playfair Display',serif",fontSize:'1.1rem'}}>Your wedding at a glance</div>
+            ${[['Couple',f.coupleNames||'—'],['Email',f.email||'—'],['Date',fmtDate(f.d)],['City',f.city],['Guests',f.g],['Budget',fmtMoney(f.bud)],['Package',f.pkg],['Theme',f.theme],['Decor',f.decor.length?f.decor.join(', '):'None'],['Dishes',f.menu.length?f.menu.length+' selected':'None']].map(([k,v])=>html`
+              <div key=${k} style=${{display:'flex',justifyContent:'space-between',padding:'5px 0',borderBottom:'1px solid var(--border)',fontSize:'.88rem'}}>
+                <span style=${{color:'var(--sub)'}}>${k}</span><b>${v}</b>
+              </div>`)}
+          </div>
+          ${err&&html`<p style=${{color:'var(--bad)',fontSize:'.85rem',marginTop:12}}>${err}</p>`}
+        </div>`}
+
+        <!-- Navigation -->
+        <div style=${{display:'flex',gap:10,marginTop:28,justifyContent:'space-between'}}>
+          <button className="btn" style=${{minWidth:100}} onClick=${()=>step>1?setStep(s=>s-1):onBack()}>
+            ${step===1?'Back':'Back'}
+          </button>
+          ${step<4
+            ?html`<button className="btn btn-pri" style=${{minWidth:160}} disabled=${!canNext[step]} onClick=${()=>setStep(s=>s+1)}>Continue →</button>`
+            :html`<button className="btn btn-pri" style=${{minWidth:200}} disabled=${loading||!canNext[1]} onClick=${submit}>
+              ${loading?'Registering...':'Register my wedding 💍'}
+            </button>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════ */
+function App(){
+  const[S,setS]=useState(null);
+  const[role,setRole]=useState(null);
+  const[tab,setTab]=useState('');
+  const[wid,setWid]=useState('w1');
+  const[err,setErr]=useState('');
+  const[showRegister,setShowRegister]=useState(false);
+
+  useEffect(()=>{
+    window._rkLogin=async(token,r,coupleWid)=>{
+      TOK=token;
+      try{
+        const j=await apiFetch('GET','/api/state');
+        if(j.state){VER=j.version;setS(j.state);}
+        else{const s=seedData();const res=await apiFetch('PUT','/api/state',{state:s,version:0});VER=res.version;setS(s);}
+        setRole(r);setTab(NAV[r][0]);
+        // For couple: use the wid from their account, else fallback to first wedding
+        if(r==='couple'){
+          const resolvedWid=coupleWid||(j.wid)||'w1';
+          setWid(resolvedWid);
+        }else if(r==='vendor'){
+          setWid('w1');
+        }
+        setErr('');
+      }catch(e){setErr(errMsg(e));}
+    };
+    return()=>{delete window._rkLogin;};
+  },[]);
+
+  useEffect(()=>{
+    if(!role)return;
+    const t=setInterval(()=>{if(BUSY)return;apiFetch('GET','/api/state?since='+VER).then(j=>{if(!j.unchanged&&!BUSY){VER=j.version;setS(j.state);}}).catch(()=>{});},5000);
+    return()=>clearInterval(t);
+  },[role]);
+
+  const onErr=useCallback(e=>{toast(errMsg(e),'bad',5000);apiFetch('GET','/api/state').then(j=>{if(j.state){VER=j.version;setS(j.state);}}).catch(()=>{});},[]);
+  const update=useCallback(fn=>{setS(prev=>{const next=JSON.parse(JSON.stringify(prev));fn(next);pushState(next,onErr);return next;});},[onErr]);
+  const updateW=useCallback(fn=>{update(s=>{const w=s.w.find(x=>x.id===wid)||s.w[0];fn(w,s);});},[update,wid]);
+  const navTo=(newWid,newTab)=>{setWid(newWid);setTab(newTab||NAV[role][0]);};
+  const signout=()=>{TOK=null;VER=0;BUSY=0;QUEUE=Promise.resolve();setS(null);setRole(null);setTab('');setErr('');setShowRegister(false);};
+
+  if(!role)return html`<${LoginHub}/><${ToastContainer}/>`;
+
+  // Couple registration wizard — shown when couple wants to register a new wedding
+  if(showRegister)return html`<${CoupleRegister}
+    onDone=${(newWid)=>{setWid(newWid);setTab('overview');setShowRegister(false);}}
+    onCancel=${()=>setShowRegister(false)}
+    update=${(fn)=>{setS(prev=>{const next=JSON.parse(JSON.stringify(prev));fn(next);pushState(next,onErr);return next;});}}
+    S=${S}
+  /><${ToastContainer}/>`;
+
+  const w=S&&(S.w.find(x=>x.id===wid)||S.w[0]);
+  const canSwitch=role!=='couple'&&role!=='vendor';
+  const VIEW={overview:Overview,design:DesignStudio,quotes:Quotes,payments:Payments,day:BigDay,enquiries:Enquiries,plan:PlanBoard,billing:Billing,dashboard:Dashboard};
+  const Comp=VIEW[tab];
+
+  return html`<div>
+    <div className="topbar">
+      <div className="brand"><div className="brand-ring">💍</div>The Royal Knot</div>
+      <div style=${{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+        ${canSwitch&&S&&html`<select value=${wid} onChange=${e=>setWid(e.target.value)} style=${{maxWidth:220,fontSize:'.85rem',padding:'6px 10px'}}>${S.w.map(x=>html`<option key=${x.id} value=${x.id}>${x.c} — ${x.city}</option>`)}</select>`}
+        ${role==='couple'&&html`<button className="btn btn-sm" onClick=${()=>setShowRegister(true)} style=${{borderColor:'var(--rose)',color:'var(--rose)'}}>+ Register new wedding</button>`}
+        <${Badge} type=${role==='couple'?'bad':role==='planner'?'ok':role==='founder'?'gold':'info'}>${role==='founder'?'Founder':role.charAt(0).toUpperCase()+role.slice(1)}<//>
+        <button className="btn btn-ghost btn-sm" onClick=${signout}>Sign out</button>
+      </div>
+    </div>
+    ${err&&html`<div style=${{background:'var(--bad-bg)',borderBottom:'1px solid var(--bad)',padding:'10px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',color:'var(--bad)',fontSize:'.9rem'}}><span>${err}</span><button className="btn btn-ghost btn-xs" onClick=${()=>setErr('')}>Dismiss</button></div>`}
+    <div className="tabs">${NAV[role].map(t=>html`<button key=${t} className=${'tab'+(tab===t?' on':'')} onClick=${()=>setTab(t)}>${TAB_LABEL[t]}</button>`)}</div>
+    <div className="wrap" style=${{paddingTop:20}}>
+      ${Comp&&w?html`<${Comp} w=${w} S=${S} role=${role} update=${update} updateW=${updateW} setWid=${setWid} setTab=${setTab} navTo=${navTo}/>`:html`<div className="card"><p style=${{color:'var(--muted)'}}>Loading...</p></div>`}
+    </div>
+    <${ToastContainer}/>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   OVERVIEW
+════════════════════════════════════════ */
+/* ── Signature pad component ── */
+function SignaturePad({onSave}){
+  const canvasRef=useRef(null);
+  const drawing=useRef(false);
+  const empty=useRef(true);
+  const[name,setName]=useState('');
+  const[hasStrokes,setHasStrokes]=useState(false);
+
+  const getPos=(e,canvas)=>{
+    const r=canvas.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return{x:(src.clientX-r.left)*(canvas.width/r.width),y:(src.clientY-r.top)*(canvas.height/r.height)};
+  };
+  const start=e=>{
+    e.preventDefault();
+    const c=canvasRef.current;const ctx=c.getContext('2d');
+    const p=getPos(e,c);
+    ctx.beginPath();ctx.moveTo(p.x,p.y);
+    drawing.current=true;empty.current=false;
+  };
+  const move=e=>{
+    e.preventDefault();
+    if(!drawing.current)return;
+    const c=canvasRef.current;const ctx=c.getContext('2d');
+    ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1a0a00';
+    const p=getPos(e,c);ctx.lineTo(p.x,p.y);ctx.stroke();
+    setHasStrokes(true);
+  };
+  const end=e=>{e.preventDefault();drawing.current=false;};
+  const clear=()=>{
+    const c=canvasRef.current;const ctx=c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    empty.current=true;setHasStrokes(false);
+  };
+  const save=()=>{
+    if(!hasStrokes||name.trim().length<2){toast('Draw your signature and enter your name','bad');return;}
+    const dataUrl=canvasRef.current.toDataURL('image/png');
+    onSave(name.trim(),dataUrl);
+  };
+
+  return html`<div>
+    <div style=${{marginBottom:10}}>
+      <label>Full name (printed)</label>
+      <input type="text" value=${name} placeholder="e.g. Meera Shah" onChange=${e=>setName(e.target.value)}/>
+    </div>
+    <label>Draw your signature below</label>
+    <div style=${{position:'relative',border:'2px solid var(--border2)',borderRadius:10,background:'#fff',overflow:'hidden',marginBottom:8,cursor:'crosshair'}}>
+      <canvas ref=${canvasRef} width=${600} height=${180}
+        style=${{display:'block',width:'100%',height:180,touchAction:'none'}}
+        onMouseDown=${start} onMouseMove=${move} onMouseUp=${end} onMouseLeave=${end}
+        onTouchStart=${start} onTouchMove=${move} onTouchEnd=${end}
+      />
+      ${!hasStrokes&&html`<div style=${{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none',color:'#ccc',fontFamily:"'Playfair Display',serif",fontSize:'1.1rem'}}>Sign here</div>`}
+    </div>
+    <div style=${{display:'flex',gap:8}}>
+      <button className="btn btn-ghost btn-sm" onClick=${clear}>Clear</button>
+      <button className="btn btn-pri" disabled=${!hasStrokes||name.trim().length<2} onClick=${save} style=${{flex:1}}>Confirm signature</button>
+    </div>
+  </div>`;
+}
+
+function Overview({w,role,update,updateW}){
+  const[showAddV,setShowAddV]=useState(false);
+  const[nv,setNv]=useState({n:'',c:'Venue',a:'',e:'09:00',notes:''});
+  const[editRsvp,setEditRsvp]=useState(false);
+  const[rsvpDraft,setRsvpDraft]=useState({y:w.rsvp.y,n:w.rsvp.n,maybe:w.rsvp.maybe});
+  const isCouple=role==='couple';
+  const done=w.tasks.filter(t=>t.s==='Done').length;
+  const pct=w.tasks.length?Math.round(done/w.tasks.length*100):0;
+  const days=Math.round((new Date(w.d)-new Date(TODAY))/864e5);
+  const saveField=(k,v)=>{updateW(x=>{x[k]=v;});toast('Saved','ok',1800);};
+  const signAgreement=(name,imgData)=>{updateW(x=>{x.signed={n:name,at:TODAY,img:imgData};});toast('Agreement signed — welcome aboard!','ok');};
+  const saveVendor=()=>{
+    if(!nv.n.trim()||!(+nv.a>0)){toast('Name and fee are required','bad');return;}
+    updateW(x=>{x.vs.push(mkVendor(nv.n.trim(),nv.c,+nv.a,0,0,0,nv.e));});
+    setNv({n:'',c:'Venue',a:'',e:'09:00',notes:''});setShowAddV(false);toast('Vendor added','ok');
+  };
+  const saveRsvp=()=>{updateW(x=>{x.rsvp={y:+rsvpDraft.y||0,n:+rsvpDraft.n||0,maybe:+rsvpDraft.maybe||0};});setEditRsvp(false);toast('RSVP counts updated','ok');};
+  const removeVendor=vid=>{if(!confirm('Remove this vendor?'))return;updateW(x=>{x.vs=x.vs.filter(v=>v.id!==vid);});toast('Vendor removed','ok');};
+
+  return html`<div className="grid">
+    <div className="hero-banner">
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12}}>
+        <div>${wStatusBadge(w)}<h1 style=${{marginTop:8}}>${w.c}</h1><div className="sub">${w.city} · ${fmtDate(w.d)} · ${w.g} guests · ${w.pkg}</div></div>
+        <div style=${{textAlign:'right'}}><div style=${{color:'var(--gold2)',fontFamily:"'Playfair Display',serif",fontSize:'2rem',fontWeight:700}}>${days>0?days:0}</div><div style=${{color:'#d0b898',fontSize:'.8rem'}}>${days>0?'days to go':days===0?'Today!':'days ago'}</div></div>
+      </div>
+      <div className="stat-row">
+        <div className="stat"><span className="stat-val">${pct}%</span><span className="stat-lbl">planned</span></div>
+        <div className="stat"><span className="stat-val">${w.rsvp.y}</span><span className="stat-lbl">attending</span></div>
+        <div className="stat"><span className="stat-val">${fmtMoney(w.val)}</span><span className="stat-lbl">contract value</span></div>
+        <div className="stat"><span className="stat-val">${w.vs.length}</span><span className="stat-lbl">vendors</span></div>
+      </div>
+    </div>
+
+    <div className="grid g2">
+      <div className="card">
+        <div className="sec-hd"><h3>Wedding details</h3></div>
+        <div className="grid g2">
+          <${Field} label="Couple" value=${w.c} onChange=${v=>saveField('c',v)} readOnly=${isCouple}/>
+          <${Field} label="City" value=${w.city} onChange=${v=>saveField('city',v)} options=${CITIES} readOnly=${isCouple}/>
+          <${Field} label="Date" type="date" value=${w.d} onChange=${v=>saveField('d',v)} readOnly=${isCouple}/>
+          <${Field} label="Guests" type="number" value=${w.g} onChange=${v=>saveField('g',Math.max(1,v||1))} readOnly=${isCouple}/>
+          <${Field} label="Package" value=${w.pkg} onChange=${v=>saveField('pkg',v)} options=${PKGS} readOnly=${isCouple}/>
+          <${Field} label="Budget (Rs. L)" type="number" value=${w.bud} onChange=${v=>saveField('bud',v)} readOnly=${isCouple}/>
+        </div>
+        ${!isCouple&&html`<p style=${{fontSize:'.8rem',color:'var(--muted)',marginTop:10}}>Lead source: ${w.src}</p>`}
+      </div>
+
+      <div className="card">
+        <div className="sec-hd"><h3>Service agreement</h3></div>
+        ${w.signed
+          ?html`<div>
+            <${Badge} type="ok">Signed<//>
+            <p style=${{marginTop:10}}>Signed by <b>${w.signed.n}</b> on ${fmtDate(w.signed.at)}.</p>
+            ${w.signed.img&&html`<div style=${{marginTop:12,border:'1px solid var(--border)',borderRadius:8,padding:8,background:'#fff'}}>
+              <div style=${{fontSize:'.75rem',color:'var(--muted)',marginBottom:4}}>Signature on record</div>
+              <img src=${w.signed.img} alt="Signature" style=${{maxWidth:'100%',height:'auto',display:'block',maxHeight:90}}/>
+            </div>`}
+            <p style=${{color:'var(--muted)',fontSize:'.85rem',marginTop:8}}>Agreement on record. All features are active.</p>
+          </div>`
+          :w.st==='Enquiry'
+            ?html`<div><${Badge} type="neutral">Not sent yet<//>
+              <p style=${{color:'var(--muted)',marginTop:10,fontSize:'.9rem'}}>Your planner will send the agreement once details are confirmed.</p></div>`
+            :html`<div>
+              <${Badge} type="warn">Awaiting signature<//>
+              <p style=${{marginTop:10,marginBottom:14,fontSize:'.9rem'}}>Draw your signature below and enter your full name to sign the agreement and unlock all features.</p>
+              <${SignaturePad} onSave=${signAgreement}/>
+            </div>`}
+      </div>
+    </div>
+
+    <div className="grid g2">
+      <div className="card">
+        <div className="sec-hd"><h3>Planning progress</h3></div>
+        <div style=${{display:'flex',alignItems:'baseline',gap:10,marginBottom:12}}>
+          <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'2.2rem',color:'var(--gold)',fontWeight:700}}>${pct}%</span>
+          <span style=${{color:'var(--muted)',fontSize:'.9rem'}}>${done} of ${w.tasks.length} tasks done</span>
+        </div>
+        <div className="bar"><div className="bar-fill" style=${{width:pct+'%'}}></div></div>
+        <div style=${{marginTop:14,display:'grid',gap:8}}>
+          ${STG.map(s=>{const c=w.tasks.filter(t=>t.s===s).length;const sp=w.tasks.length?Math.round(c/w.tasks.length*100):0;return html`<div key=${s} style=${{display:'flex',alignItems:'center',gap:10}}>
+            <span style=${{width:100,fontSize:'.82rem',color:'var(--sub)'}}>${s}</span>
+            <div style=${{flex:1}}><div className="bar"><div className="bar-fill" style=${{width:sp+'%'}}></div></div></div>
+            <span style=${{fontSize:'.8rem',color:'var(--muted)',width:28,textAlign:'right'}}>${c}</span>
+          </div>`;})}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="sec-hd"><h3>Guest RSVPs</h3>
+          <button className="btn btn-sm" onClick=${()=>{setRsvpDraft({y:w.rsvp.y,n:w.rsvp.n,maybe:w.rsvp.maybe});setEditRsvp(v=>!v);}}>
+            ${editRsvp?'Cancel':'Edit counts'}
+          </button>
+        </div>
+        ${editRsvp
+          ?html`<div>
+            <div className="grid g3">
+              <${Field} label="Attending" type="number" value=${rsvpDraft.y} onChange=${v=>setRsvpDraft(p=>({...p,y:+v||0}))}/>
+              <${Field} label="Declined" type="number" value=${rsvpDraft.n} onChange=${v=>setRsvpDraft(p=>({...p,n:+v||0}))}/>
+              <${Field} label="Maybe" type="number" value=${rsvpDraft.maybe} onChange=${v=>setRsvpDraft(p=>({...p,maybe:+v||0}))}/>
+            </div>
+            <button className="btn btn-pri btn-sm" style=${{marginTop:10}} onClick=${saveRsvp}>Save RSVP counts</button>
+          </div>`
+          :html`<div>
+            ${[['y','Attending','ok',w.rsvp.y],['n','Declined','bad',w.rsvp.n],['maybe','Maybe','warn',w.rsvp.maybe]].map(([k,lbl,type,val])=>html`
+              <div key=${k} className="row">
+                <span style=${{display:'flex',alignItems:'center',gap:8}}><span className=${'dot dot-'+type}></span><span style=${{fontSize:'.9rem'}}>${lbl}</span></span>
+                <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.3rem',color:'var(--gold)',fontWeight:700}}>${val}</span>
+              </div>`)}
+            <div className="row" style=${{borderBottom:'none'}}><span style=${{color:'var(--muted)',fontSize:'.85rem'}}>Total responses</span><b>${w.rsvp.y+w.rsvp.n+w.rsvp.maybe}</b></div>
+          </div>`}
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Vendor team (${w.vs.length})</h3>
+        ${role==='planner'&&html`<button className="btn btn-sm" onClick=${()=>setShowAddV(v=>!v)}>${showAddV?'Cancel':'+ Add vendor'}</button>`}
+      </div>
+      ${showAddV&&html`<div className="card-inset" style=${{marginBottom:16}}>
+        <h4 style=${{marginBottom:12}}>New vendor</h4>
+        <div className="grid g3">
+          <${Field} label="Name" value=${nv.n} onChange=${v=>setNv(p=>({...p,n:v}))}/>
+          <${Field} label="Category" value=${nv.c} onChange=${v=>setNv(p=>({...p,c:v}))} options=${VENDOR_CATS}/>
+          <${Field} label="Agreed fee (Rs. L)" type="number" value=${nv.a} onChange=${v=>setNv(p=>({...p,a:v}))}/>
+          <${Field} label="Expected arrival" type="time" value=${nv.e} onChange=${v=>setNv(p=>({...p,e:v}))}/>
+        </div>
+        <button className="btn btn-pri btn-sm" style=${{marginTop:10}} disabled=${!nv.n.trim()||!(+nv.a>0)} onClick=${saveVendor}>Add vendor</button>
+      </div>`}
+      ${w.vs.length===0
+        ?html`<div className="empty"><div className="empty-icon">🤝</div><p>No vendors yet.${role==='planner'?' Add above or use Quotes tab.':''}</p></div>`
+        :html`<div className="tbl-wrap"><table>
+          <thead><tr><th>Vendor</th><th>Category</th><th>Agreed</th><th>Paid</th><th>Arrival</th>${role==='planner'?html`<th></th>`:''}</tr></thead>
+          <tbody>${w.vs.map(v=>html`<tr key=${v.id}>
+            <td><b>${v.n}</b></td>
+            <td><${Badge}>${v.c}</div></td>
+            <td>${fmtMoney(v.a)}</td>
+            <td>${v.p>0?fmtMoney(v.p):html`<span style=${{color:'var(--muted)'}}>—</span>`}</td>
+            <td>${v.e}</td>
+            ${role==='planner'?html`<td><button className="btn btn-ghost btn-xs" onClick=${()=>removeVendor(v.id)}>Remove</button></td>`:''}
+          </tr>`)}</tbody>
+        </table></div>`}
+    </div>
+
+    ${role!=='vendor'&&html`<div className="card">
+      <div className="sec-hd"><h3>Internal notes</h3></div>
+      <textarea rows="3" value=${w.notes||''} placeholder="Any notes about this wedding..." readOnly=${isCouple}
+        onChange=${e=>!isCouple&&updateW(x=>{x.notes=e.target.value;})}
+        onBlur=${()=>!isCouple&&toast('Notes saved','ok',1500)} style=${{resize:'vertical'}}></textarea>
+    </div>`}
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   DESIGN STUDIO
+════════════════════════════════════════ */
+function DesignStudio({w,updateW}){
+  const[previewTheme,setPreviewTheme]=useState(null);
+  const des=w.design||{theme:'Royal Heritage',decor:[],menu:[],notes:''};
+  const previewing=previewTheme||des.theme;
+
+  const togDecor=item=>{updateW(x=>{if(!x.design)x.design={theme:'Royal Heritage',decor:[],menu:[],notes:''};const i=x.design.decor.indexOf(item);if(i<0)x.design.decor.push(item);else x.design.decor.splice(i,1);});};
+  const togMenu=item=>{updateW(x=>{if(!x.design)x.design={theme:'Royal Heritage',decor:[],menu:[],notes:''};const i=x.design.menu.indexOf(item);if(i<0)x.design.menu.push(item);else x.design.menu.splice(i,1);});};
+  const setTheme=t=>{updateW(x=>{if(!x.design)x.design={theme:'Royal Heritage',decor:[],menu:[],notes:''};x.design.theme=t;x.theme=t;});toast('Theme updated','ok',1500);};
+  const plateCost=des.menu.reduce((s,m)=>{const r=MENU.find(x=>x[0]===m);return s+(r?r[2]:0);},0);
+
+  return html`<div className="grid">
+    <div className="card">
+      <div className="sec-hd"><h3>Wedding theme</h3><${Badge} type="gold">${des.theme}</div></div>
+      <div style=${{position:'relative',borderRadius:14,overflow:'hidden',marginBottom:18,height:220,background:'#eee'}}>
+        <img src=${THEME_PHOTOS[previewing]||THEME_PHOTOS['Royal Heritage']} alt=${previewing} loading="lazy"
+          style=${{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+        <div style=${{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 55%)',display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'16px 18px'}}>
+          <div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.3rem',fontWeight:700,color:'#fff',marginBottom:4}}>${previewing}</div>
+          <div style=${{fontSize:'.82rem',color:'rgba(255,255,255,.8)',lineHeight:1.4,maxWidth:440}}>${THEME_DESC[previewing]}</div>
+        </div>
+        ${previewing===des.theme&&html`<div style=${{position:'absolute',top:12,right:12,background:'var(--ok)',color:'#fff',borderRadius:99,padding:'3px 10px',fontSize:'.75rem',fontWeight:700}}>Selected</div>`}
+      </div>
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:10}}>
+        ${THEMES.map(t=>{
+          const isSel=des.theme===t;
+          return html`<button key=${t} onClick=${()=>setTheme(t)} onMouseEnter=${()=>setPreviewTheme(t)} onMouseLeave=${()=>setPreviewTheme(null)}
+            style=${{position:'relative',borderRadius:10,overflow:'hidden',border:isSel?'3px solid var(--text)':'3px solid transparent',cursor:'pointer',padding:0,background:'none',transition:'all .18s',boxShadow:isSel?'0 0 0 2px var(--gold)':'none'}}>
+            <img src=${THEME_PHOTOS[t]||THEME_PHOTOS['Royal Heritage']} alt=${t} loading="lazy" style=${{width:'100%',height:90,objectFit:'cover',display:'block',filter:isSel?'none':'brightness(.8)'}}/>
+            <div style=${{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 50%)',display:'flex',alignItems:'flex-end',padding:'8px'}}>
+              <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'.78rem',fontWeight:700,color:'#fff',lineHeight:1.2}}>${t}</span>
+            </div>
+            ${isSel&&html`<div style=${{position:'absolute',top:5,right:5,background:'var(--gold)',color:'#fff',borderRadius:99,width:20,height:20,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.7rem',fontWeight:700}}>✓</div>`}
+          </button>`;
+        })}
+      </div>
+      <p style=${{fontSize:'.78rem',color:'var(--muted)',marginTop:10}}>Hover to preview · Click to select</p>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Decor selections</h3><span style=${{color:'var(--muted)',fontSize:'.82rem'}}>${des.decor.length} of ${DECOR_ITEMS.length} selected</span></div>
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:10}}>
+        ${DECOR_ITEMS.map(item=>{
+          const on=des.decor.includes(item);
+          return html`<button key=${item} onClick=${()=>{togDecor(item);toast((on?'Removed: ':'Added: ')+item,'ok',1500);}}
+            style=${{position:'relative',borderRadius:10,overflow:'hidden',border:on?'3px solid var(--rose)':'3px solid transparent',cursor:'pointer',padding:0,background:'none',transition:'all .18s',boxShadow:on?'0 0 0 2px #f7c8d8':'none'}}>
+            <img src=${DECOR_PHOTOS[item]||DECOR_PHOTOS['Floral mandap']} alt=${item} loading="lazy"
+              style=${{width:'100%',height:110,objectFit:'cover',display:'block',filter:on?'none':'brightness(.7) saturate(.8)',transition:'filter .2s'}}/>
+            <div style=${{position:'absolute',inset:0,background:on?'rgba(192,57,77,.15)':'rgba(0,0,0,.45)',display:'flex',alignItems:'flex-end',padding:'8px'}}>
+              <span style=${{fontFamily:"'Playfair Display',serif",fontSize:'.8rem',fontWeight:700,color:'#fff',lineHeight:1.3}}>${item}</span>
+            </div>
+            ${on&&html`<div style=${{position:'absolute',top:6,right:6,background:'var(--rose)',color:'#fff',borderRadius:99,width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.75rem',fontWeight:700}}>✓</div>`}
+          </button>`;
+        })}
+      </div>
+      ${des.decor.length>0&&html`<div style=${{marginTop:12,padding:'10px 14px',background:'var(--blush)',borderRadius:8,fontSize:'.85rem',color:'var(--rose)'}}>Selected: ${des.decor.join(' · ')}</div>`}
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Food menu</h3><span style=${{color:'var(--muted)',fontSize:'.82rem'}}>${des.menu.length} dishes · ${plateCost?'Rs.'+plateCost+'/plate':'select dishes to price'}</span></div>
+      ${['Starters','Mains','Live Stations','Desserts'].map(cat=>html`<div key=${cat} style=${{marginBottom:16}}>
+        <div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8}}>${cat}</div>
+        <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
+          ${MENU.filter(x=>x[1]===cat).map(([name,_,price])=>{
+            const on=des.menu.includes(name);
+            return html`<button key=${name} onClick=${()=>togMenu(name)} style=${{padding:'7px 14px',borderRadius:99,border:on?'2px solid var(--gold)':'1px solid var(--border2)',background:on?'var(--gold)':'var(--surface)',color:on?'#fff':'var(--text)',font:'500 .82rem Inter,sans-serif',cursor:'pointer',transition:'all .15s'}}>
+              ${name} · Rs.${price}
+            </button>`;
+          })}
+        </div>
+      </div>`)}
+      ${plateCost>0&&html`<div style=${{background:'var(--bg)',borderRadius:10,padding:'12px 16px',marginTop:8,border:'1px solid var(--border)'}}>
+        <div style=${{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style=${{color:'var(--sub)',fontSize:'.9rem'}}>Cost per plate</span><b>Rs.${plateCost}</b></div>
+        <div style=${{display:'flex',justifyContent:'space-between'}}><span style=${{color:'var(--sub)',fontSize:'.9rem'}}>Total for ${w.g} guests</span><b style=${{color:'var(--gold)'}}>${fmtMoney(plateCost*w.g/1e5)}</b></div>
+      </div>`}
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Design notes</h3></div>
+      <textarea rows="4" value=${des.notes||''} placeholder="Vision, colour preferences, special requests..."
+        onChange=${e=>updateW(x=>{if(!x.design)x.design={};x.design.notes=e.target.value;})}
+        onBlur=${()=>toast('Notes saved','ok',1500)} style=${{resize:'vertical'}}></textarea>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   QUOTES
+════════════════════════════════════════ */
+function Quotes({w,updateW,role}){
+  if(!w.signed)return html`<div className="card" style=${{textAlign:'center',padding:'40px 20px'}}>
+    <div style=${{fontSize:'2rem',marginBottom:12}}>🔒</div>
+    <h3>Agreement required</h3>
+    <p style=${{color:'var(--muted)',marginTop:8}}>Quotes unlock once the service agreement is signed on the Wedding tab.</p>
+  </div>`;
+
+  const selectCaterer=(rfqId,qi)=>{ updateW(x=>{const rfq=x.rfq.find(r=>r.id===rfqId);if(!rfq||rfq.st==='won')return;rfq.st='won';rfq.q.forEach((q,i)=>{q.s=i===qi?'won':'closed';});const q=rfq.q[qi];if(!x.vs.find(v=>v.n===q.v)){const v=mkVendor(q.v,'Catering',+(q.p*x.g/1e5).toFixed(2),0,0,0,'15:00');v.plate=q.p;x.vs.push(v);}});toast('Caterer selected and added to vendor list','ok');};
+  const requestQuotes=()=>{updateW(x=>{x.rfq.push({id:uid(),cat:'Catering',st:'open',q:CATERERS.map(c=>({...c,s:null}))});});toast('Quote request sent to 3 caterers','ok');};
+
+  return html`<div className="grid">
+    ${w.rfq.length===0&&html`<div className="card">
+      <div className="sec-hd"><h3>Catering quotes</h3></div>
+      <div className="empty"><div className="empty-icon">🍽️</div><p>No catering quotes yet.</p>
+        ${role!=='couple'&&html`<button className="btn btn-pri" style=${{marginTop:14}} onClick=${requestQuotes}>Request quotes from 3 caterers</button>`}
+        ${role==='couple'&&html`<p style=${{fontSize:'.85rem',color:'var(--muted)'}}>Your planner will request quotes on your behalf.</p>`}
+      </div>
+    </div>`}
+    ${w.rfq.map(rfq=>{
+      const lo=Math.min(...rfq.q.map(q=>q.p));
+      return html`<div className="card" key=${rfq.id}>
+        <div className="sec-hd"><h3>${rfq.cat} — compare quotes</h3><${Badge} type=${rfq.st==='won'?'ok':'warn'}>${rfq.st==='won'?'Caterer chosen':'Awaiting decision'}</div></div>
+        <div className="tbl-wrap"><table>
+          <thead><tr><th>Caterer</th><th>Price/plate</th><th>Total</th><th>Extra hour</th><th>Menu</th><th>Inclusions</th>${rfq.st!=='won'&&role!=='couple'?html`<th></th>`:''}</tr></thead>
+          <tbody>${rfq.q.map((q,qi)=>html`<tr key=${q.v} style=${{background:q.s==='won'?'var(--ok-bg)':q.s==='closed'?'var(--bg)':''}}>
+            <td><b>${q.v}</b>${q.s==='won'?html` <${Badge} type="ok">Selected<//>`:q.s==='closed'?html` <${Badge} type="neutral">Not chosen<//>`:''}</td>
+            <td><b>Rs.${q.p}</b>${q.p===lo?html` <${Badge} type="ok">Lowest<//>`:''}</td>
+            <td>${fmtMoney(q.p*w.g/1e5)}</td>
+            <td>Rs.${q.x.toLocaleString('en-IN')}</td>
+            <td style=${{fontSize:'.85rem'}}>${q.m}</td>
+            <td style=${{fontSize:'.82rem'}}>${CATERER_INCL.map((inc,i)=>html`<div key=${i}>${q.i[i]?'✓':'✗'} ${inc}</div>`)}</td>
+            ${rfq.st!=='won'&&role!=='couple'?html`<td><button className="btn btn-pri btn-xs" onClick=${()=>selectCaterer(rfq.id,qi)}>Select</button></td>`:''}
+          </tr>`)}</tbody>
+        </table></div>
+        ${rfq.st==='won'&&html`<p style=${{color:'var(--ok)',fontSize:'.85rem',marginTop:10}}>Caterer is booked and added to the vendor list. Other quotes are closed.</p>`}
+      </div>`;
+    })}
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   PAYMENTS
+════════════════════════════════════════ */
+function Payments({w,updateW,role}){
+  const[refDraft,setRefDraft]=useState({});
+  const total=wRev(w);
+  const paid=w.pay.filter(p=>p.paid).reduce((s,p)=>s+total*p.pct/100,0);
+  const outstanding=total-paid;
+  const recordPayment=(pid,ref)=>{updateW(x=>{const p=x.pay.find(y=>y.id===pid);if(!p)return;p.paid=true;p.ref=ref||'';p.paidAt=TODAY;const idx=x.pay.indexOf(p);if(idx===0&&x.st==='Enquiry'){x.st='Confirmed';if(!x.tasks.length)genPlan(x);}if(idx===2)x.st='Completed';});setRefDraft(d=>({...d,[pid]:''}));toast('Payment recorded','ok');};
+
+  return html`<div className="grid">
+    <div className="grid g4">
+      <div className="card card-gold"><div style=${{fontSize:'.78rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Total contract</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',color:'var(--gold)',fontWeight:700}}>${fmtMoney(total)}</div></div>
+      <div className="card"><div style=${{fontSize:'.78rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Paid</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',color:'var(--ok)',fontWeight:700}}>${fmtMoney(paid)}</div></div>
+      <div className="card"><div style=${{fontSize:'.78rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Outstanding</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',color:outstanding>0?'var(--bad)':'var(--ok)',fontWeight:700}}>${fmtMoney(outstanding)}</div></div>
+      <div className="card"><div style=${{fontSize:'.78rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Collected</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',fontWeight:700}}>${total>0?Math.round(paid/total*100):0}%</div><div className="bar" style=${{marginTop:6}}><div className="bar-fill" style=${{width:(total>0?paid/total*100:0)+'%'}}></div></div></div>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Payment schedule</h3></div>
+      ${w.pay.map((p,i)=>{
+        const amt=total*p.pct/100;
+        const overdue=!p.paid&&p.due<TODAY;
+        const locked=i>0&&!w.pay[i-1].paid;
+        return html`<div key=${p.id} style=${{background:p.paid?'var(--ok-bg)':overdue?'var(--bad-bg)':'var(--bg)',border:'1px solid '+(p.paid?'#c0e8d0':overdue?'#e8c0c0':'var(--border)'),borderRadius:12,padding:'16px 18px',marginBottom:10}}>
+          <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12}}>
+            <div>
+              <div style=${{fontWeight:600,marginBottom:4}}>${p.n}</div>
+              <div style=${{fontSize:'.82rem',color:'var(--muted)'}}>Due ${fmtDate(p.due)} · ${p.pct}% of contract</div>
+              ${p.paid&&p.ref&&html`<div style=${{fontSize:'.8rem',color:'var(--ok)',marginTop:4}}>Ref: ${p.ref}</div>`}
+              ${p.paid&&p.paidAt&&html`<div style=${{fontSize:'.8rem',color:'var(--ok)'}}>Recorded on ${fmtDate(p.paidAt)}</div>`}
+            </div>
+            <div style=${{textAlign:'right'}}>
+              <div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.4rem',fontWeight:700,color:p.paid?'var(--ok)':overdue?'var(--bad)':'var(--gold)'}}>${fmtMoney(amt)}</div>
+              ${p.paid?html`<${Badge} type="ok">Paid<//>`:overdue?html`<${Badge} type="bad">Overdue<//>`:locked?html`<${Badge} type="neutral">Previous pending<//>`:html`<${Badge} type="warn">Upcoming<//>` }
+            </div>
+          </div>
+          ${!p.paid&&!locked&&html`<div style=${{marginTop:12,display:'flex',gap:8,flexWrap:'wrap',alignItems:'flex-end'}}>
+            <div style=${{flex:1,minWidth:160}}><label>Reference / transaction ID (optional)</label><input type="text" placeholder="e.g. NEFT/2026/1234" value=${refDraft[p.id]||''} onChange=${e=>setRefDraft(d=>({...d,[p.id]:e.target.value}))}/></div>
+            <button className="btn btn-pri" onClick=${()=>recordPayment(p.id,refDraft[p.id]||'')}>${role==='couple'?'Mark as paid':'Record payment'}</button>
+          </div>`}
+        </div>`;
+      })}
+      <p style=${{fontSize:'.82rem',color:'var(--muted)',marginTop:8}}>Payments must be recorded in order. The first payment confirms the booking and generates the full plan.</p>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   PLAN BOARD
+════════════════════════════════════════ */
+function PlanBoard({w,updateW}){
+  const[filter,setFilter]=useState('All');
+  const phases=['All',...new Set(PLAN_TASKS.map(x=>x[0]))];
+  if(!w.tasks.length)return html`<div className="card" style=${{textAlign:'center',padding:'40px 20px'}}>
+    <div style=${{fontSize:'2rem',marginBottom:12}}>📋</div><h3>No plan yet</h3>
+    <p style=${{color:'var(--muted)',marginTop:8}}>Auto-generates when booking deposit is recorded.</p>
+    <button className="btn btn-pri" style=${{marginTop:16}} onClick=${()=>{updateW(x=>genPlan(x));toast('Plan generated','ok');}}>Generate plan now</button>
+  </div>`;
+  const filtered=w.tasks.filter(t=>filter==='All'||t.ph===filter);
+  return html`<div className="grid">
+    <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
+      ${phases.map(ph=>html`<button key=${ph} className=${filter===ph?'btn btn-pri btn-sm':'btn btn-sm'} onClick=${()=>setFilter(ph)}>${ph}</button>`)}
+    </div>
+    <div className="grid g4">
+      ${STG.map(s=>{const n=filtered.filter(t=>t.s===s).length;return html`<div key=${s} className="card" style=${{padding:'12px 16px'}}>
+        <div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:4}}>${s}</div>
+        <div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',color:'var(--gold)',fontWeight:700}}>${n}</div>
+      </div>`;})}
+      <div className="card" style=${{padding:'12px 16px'}}>
+        <div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:4}}>Done %</div>
+        <div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',color:'var(--ok)',fontWeight:700}}>${filtered.length?Math.round(filtered.filter(t=>t.s==='Done').length/filtered.length*100):0}%</div>
+      </div>
+    </div>
+    <div className="kanban">
+      ${STG.map(s=>html`<div className="kanban-col" key=${s}>
+        <div className="kanban-col-hd"><span>${s}</span><span>${filtered.filter(t=>t.s===s).length}</span></div>
+        ${filtered.filter(t=>t.s===s).sort((a,b)=>a.ph.localeCompare(b.ph)).map(t=>html`<div className="kanban-card" key=${t.id}>
+          <div style=${{marginBottom:6,fontWeight:500,fontSize:'.9rem',lineHeight:1.35}}>${t.t}</div>
+          <div style=${{marginBottom:8}}><span className=${'badge ph-'+t.ph}>${t.ph}</span></div>
+          <div style=${{display:'flex',gap:6}}>
+            <div style=${{flex:1}}><label>Stage</label><select value=${t.s} onChange=${e=>{updateW(x=>{const k=x.tasks.find(k=>k.id===t.id);if(k)k.s=e.target.value;});toast('Updated','ok',1500);}}>${STG.map(o=>html`<option key=${o}>${o}</option>`)}</select></div>
+            <div style=${{flex:1}}><label>Owner</label><select value=${t.o} onChange=${e=>{updateW(x=>{const k=x.tasks.find(k=>k.id===t.id);if(k)k.o=e.target.value;});toast('Updated','ok',1500);}}>${OWN.map(o=>html`<option key=${o}>${o}</option>`)}</select></div>
+          </div>
+        </div>`)}
+        ${filtered.filter(t=>t.s===s).length===0&&html`<div style=${{textAlign:'center',padding:'20px 0',color:'var(--muted)',fontSize:'.85rem'}}>No tasks</div>`}
+      </div>`)}
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   BIG DAY
+════════════════════════════════════════ */
+function BigDay({w,updateW,role}){
+  const[now,setNow]=useState(()=>{const d=new Date();return d.getHours()*60+d.getMinutes();});
+  const[issue,setIssue]=useState('');
+  const[issOwner,setIssOwner]=useState('Riya');
+  const isPlanner=role==='planner';
+  useEffect(()=>{const t=setInterval(()=>{const d=new Date();setNow(d.getHours()*60+d.getMinutes());},60000);return()=>clearInterval(t);},[]);
+  const late=w.vs.filter(v=>!v.ar&&hm(v.e)<now);
+  const sorted=[...w.sched].sort((a,b)=>hm(a.t)-hm(b.t));
+  const markArrived=vid=>{updateW(x=>{const v=x.vs.find(k=>k.id===vid);if(v)v.ar=fm(now);});toast('Marked as arrived','ok',1800);};
+  const addIssue=()=>{if(!issue.trim())return;updateW(x=>{x.iss.push({id:uid(),t:issue.trim(),o:issOwner,ok:false,at:fm(now)});});setIssue('');toast('Issue logged','warn',2000);};
+  const resolveIssue=iid=>{updateW(x=>{const i=x.iss.find(k=>k.id===iid);if(i)i.ok=true;});toast('Issue resolved','ok',1800);};
+  const addEvent=()=>{updateW(x=>{x.sched.push({id:uid(),t:fm(now),e:'New event',o:'Riya'});});toast('Event added','ok',1800);};
+
+  return html`<div className="grid">
+    <div className="card card-gold">
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
+        <div><h3 style=${{marginBottom:4}}>Live — ${fm(now)}</h3><p style=${{color:'var(--sub)',fontSize:'.9rem'}}>${w.c} · ${fmtDate(w.d)}</p></div>
+        <div style=${{display:'flex',gap:10,flexWrap:'wrap'}}>
+          ${late.length>0
+            ?html`<div style=${{background:'var(--bad-bg)',border:'1px solid var(--bad)',borderRadius:8,padding:'8px 14px',color:'var(--bad)',fontSize:'.85rem',fontWeight:500}}>${late.length} vendor${late.length>1?'s':''} overdue</div>`
+            :html`<div style=${{background:'var(--ok-bg)',border:'1px solid var(--ok)',borderRadius:8,padding:'8px 14px',color:'var(--ok)',fontSize:'.85rem',fontWeight:500}}>All on track</div>`}
+          <div style=${{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 14px',fontSize:'.85rem',color:'var(--sub)'}}>${w.iss.filter(i=>!i.ok).length} open issue${w.iss.filter(i=>!i.ok).length!==1?'s':''}</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="grid g2">
+      <div className="card">
+        <div className="sec-hd"><h3>Run-sheet</h3>${isPlanner&&html`<button className="btn btn-sm" onClick=${addEvent}>+ Add event</button>`}</div>
+        ${sorted.length===0&&html`<div className="empty"><p>No events scheduled.</p></div>`}
+        ${sorted.map(s=>{
+          const t=hm(s.t);const st=t<now?'Done':t-now<=30?'Up next':'Upcoming';
+          return html`<div key=${s.id} className="row">
+            <div className="row-left">
+              <div style=${{display:'flex',alignItems:'center',gap:8}}>
+                ${isPlanner?html`<input type="time" value=${s.t} style=${{width:95,fontSize:'.9rem',padding:'4px 8px'}} onChange=${e=>updateW(x=>{const ev=x.sched.find(k=>k.id===s.id);if(ev)ev.t=e.target.value||s.t;})}/>`:html`<span style=${{fontFamily:"'Playfair Display',serif",fontWeight:700,fontSize:'1rem'}}>${s.t}</span>`}
+                <span style=${{fontWeight:500}}>${s.e}</span>
+              </div>
+              <span style=${{fontSize:'.8rem',color:'var(--muted)'}}>${s.o}</span>
+            </div>
+            <${Badge} type=${st==='Done'?'ok':st==='Up next'?'warn':'neutral'}>${st}<//>
+          </div>`;
+        })}
+      </div>
+
+      <div className="card">
+        <h3>Vendor check-in</h3>
+        ${w.vs.length===0&&html`<div className="empty"><p>No vendors on list.</p></div>`}
+        ${w.vs.map(v=>{
+          const overdue=!v.ar&&hm(v.e)<now;
+          return html`<div key=${v.id} className="row">
+            <div className="row-left"><b>${v.n}</b><span style=${{fontSize:'.8rem',color:'var(--muted)'}}>${v.c} · expected ${v.e}</span></div>
+            ${v.ar?html`<${Badge} type="ok">Arrived ${v.ar}<//>`:html`<span style=${{display:'flex',gap:6,alignItems:'center'}}>
+              ${overdue&&html`<${Badge} type="bad">Overdue<//>` }
+              <button className=${'btn btn-sm'+(overdue?' btn-rose':'')} onClick=${()=>markArrived(v.id)}>Mark arrived</button>
+            </span>`}
+          </div>`;
+        })}
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Issues log</h3><${Badge} type=${w.iss.filter(i=>!i.ok).length>0?'bad':'ok'}>${w.iss.filter(i=>!i.ok).length} open</div></div>
+      ${isPlanner&&html`<div style=${{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
+        <input type="text" value=${issue} placeholder="Describe the issue..." style=${{flex:1,minWidth:200}} onChange=${e=>setIssue(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&addIssue()}/>
+        <select value=${issOwner} onChange=${e=>setIssOwner(e.target.value)} style=${{width:110}}>${OWN.map(o=>html`<option key=${o}>${o}</option>`)}</select>
+        <button className="btn btn-rose" disabled=${!issue.trim()} onClick=${addIssue}>Log issue</button>
+      </div>`}
+      ${w.iss.length===0&&html`<div className="empty"><div className="empty-icon">✨</div><p>No issues logged — great sign!</p></div>`}
+      ${w.iss.map(i=>html`<div key=${i.id} className="row">
+        <div className="row-left"><span style=${{fontWeight:500}}>${i.ok?'✅':'⚠️'} ${i.t}</span><span style=${{fontSize:'.78rem',color:'var(--muted)'}}>${i.at} · ${i.o}</span></div>
+        <span>${i.ok?html`<${Badge} type="ok">Resolved<//>`:isPlanner?html`<button className="btn btn-sm btn-pri" onClick=${()=>resolveIssue(i.id)}>Mark resolved</button>`:''}</span>
+      </div>`)}
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   BILLING
+════════════════════════════════════════ */
+function Billing({w,updateW}){
+  const[desc,setDesc]=useState('');
+  const[qty,setQty]=useState(1);
+  const[rate,setRate]=useState(1000);
+  const setFinalBill=(vid,val)=>{updateW(x=>{const v=x.vs.find(k=>k.id===vid);if(v)v.b=+val;});};
+  const payVendor=vid=>{updateW(x=>{const v=x.vs.find(k=>k.id===vid);if(v)v.p=+(v.b||v.a);});toast('Payment recorded','ok');};
+  const addExtra=()=>{if(!desc.trim()||qty<=0||rate<=0)return;updateW(x=>{x.ex.push({id:uid(),d:qty+' x '+desc.trim(),amt:+(qty*rate/1e5).toFixed(2),at:TODAY});});setDesc('');setQty(1);setRate(1000);toast('Extra added','ok');};
+  const removeExtra=eid=>{updateW(x=>{x.ex=x.ex.filter(e=>e.id!==eid);});toast('Removed','ok',1800);};
+  const totalVendor=w.vs.reduce((s,v)=>s+(v.b||v.a),0);
+  const totalPaid=w.vs.reduce((s,v)=>s+v.p,0);
+  const clientInvoice=wRev(w);
+  const profit=clientInvoice-wCost(w);
+
+  return html`<div className="grid">
+    <div className="grid g4">
+      <div className="card card-gold"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Client invoice</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',color:'var(--gold)',fontWeight:700}}>${fmtMoney(clientInvoice)}</div></div>
+      <div className="card"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Vendor total</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',fontWeight:700}}>${fmtMoney(totalVendor)}</div></div>
+      <div className="card"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Vendor paid</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',color:'var(--ok)',fontWeight:700}}>${fmtMoney(totalPaid)}</div></div>
+      <div className="card" style=${{background:profit>=0?'var(--ok-bg)':'var(--bad-bg)'}}><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Gross profit</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.6rem',color:profit>=0?'var(--ok)':'var(--bad)',fontWeight:700}}>${fmtMoney(profit)}</div></div>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Vendor payments</h3></div>
+      ${w.vs.length===0&&html`<div className="empty"><div className="empty-icon">🤝</div><p>No vendors yet.</p></div>`}
+      ${w.vs.length>0&&html`<div className="tbl-wrap"><table>
+        <thead><tr><th>Vendor</th><th>Category</th><th>Agreed</th><th>Final bill</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
+        <tbody>${w.vs.map(v=>{
+          const bill=v.b||v.a;const bal=Math.max(0,+(bill-v.p).toFixed(2));
+          return html`<tr key=${v.id}>
+            <td><b>${v.n}</b></td><td><${Badge}>${v.c}</div></td><td>${fmtMoney(v.a)}</td>
+            <td><input type="number" step="0.1" style=${{width:90,fontSize:'.85rem',padding:'5px 8px'}} value=${v.b||''} placeholder=${v.a} onBlur=${e=>{if(+e.target.value>0)setFinalBill(v.id,e.target.value);}} onChange=${e=>setFinalBill(v.id,e.target.value)}/>${v.b>v.a?html` <${Badge} type="warn">+${fmtMoney(v.b-v.a)}<//>`:''}</td>
+            <td>${fmtMoney(v.p)}</td><td>${fmtMoney(bal)}</td>
+            <td>${bal>0?html`<button className="btn btn-pri btn-xs" onClick=${()=>payVendor(v.id)}>Pay ${fmtMoney(bal)}</button>`:html`<${Badge} type="ok">Settled<//>` }</td>
+          </tr>`;
+        })}</tbody>
+      </table></div>`}
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Client extras</h3></div>
+      <div className="card-inset" style=${{marginBottom:14}}>
+        <h4 style=${{marginBottom:12}}>Add extra charge</h4>
+        <div className="grid g3">
+          <${Field} label="Description" value=${desc} onChange=${setDesc} placeholder="e.g. Extra plates"/>
+          <${Field} label="Qty" type="number" value=${qty} onChange=${v=>setQty(Math.max(1,+v||1))}/>
+          <${Field} label="Rate (Rs. per unit)" type="number" value=${rate} onChange=${v=>setRate(Math.max(1,+v||1))}/>
+        </div>
+        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10,flexWrap:'wrap',gap:8}}>
+          ${desc.trim()&&qty>0&&rate>0?html`<span style=${{fontSize:'.85rem',color:'var(--sub)'}}>Total: ${fmtMoney(qty*rate/1e5)}</span>`:html`<span></span>`}
+          <button className="btn btn-pri" disabled=${!desc.trim()||qty<=0||rate<=0} onClick=${addExtra}>Add to invoice</button>
+        </div>
+      </div>
+      ${w.ex.length>0&&html`<div>${w.ex.map(e=>html`<div key=${e.id} className="row">
+        <span><span style=${{fontWeight:500}}>${e.d}</span>${e.at?html`<span style=${{fontSize:'.78rem',color:'var(--muted)',marginLeft:8}}>${e.at}</span>`:''}
+        </span>
+        <span style=${{display:'flex',gap:10,alignItems:'center'}}><b>${fmtMoney(e.amt)}</b><button className="btn btn-ghost btn-xs" onClick=${()=>removeExtra(e.id)}>Remove</button></span>
+      </div>`)}</div>`}
+      ${w.ex.length===0&&html`<p style=${{color:'var(--muted)',fontSize:'.9rem'}}>No extras yet.</p>`}
+      <div style=${{background:'var(--bg)',borderRadius:10,padding:'14px 16px',marginTop:14,border:'1px solid var(--border)'}}>
+        <div className="row" style=${{paddingTop:0}}><span style=${{color:'var(--sub)'}}>Base contract</span><b>${fmtMoney(w.val)}</b></div>
+        <div className="row"><span style=${{color:'var(--sub)'}}>Extras</span><b>${fmtMoney(w.ex.reduce((s,e)=>s+e.amt,0))}</b></div>
+        <div className="row" style=${{borderBottom:'none',paddingBottom:0}}><span style=${{fontWeight:600}}>Final invoice</span><span style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.4rem',color:'var(--gold)',fontWeight:700}}>${fmtMoney(clientInvoice)}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   ENQUIRIES
+════════════════════════════════════════ */
+function Enquiries({S,update,navTo}){
+  const init={c:'',phone:'',src:'Call',d:'2027-03-15',g:300,theme:'Royal Heritage',bud:250,pkg:'Full-Service',city:'Udaipur'};
+  const[f,setF]=useState(init);
+  const sf=(k,v)=>setF(p=>({...p,[k]:v}));
+  const valid=f.c.trim().length>1&&f.g>0&&f.bud>0;
+  const save=()=>{update(s=>{s.w.unshift(mkBase({id:'w'+uid(),c:f.c.trim(),city:f.city,d:f.d,g:f.g,theme:f.theme,bud:f.bud,pkg:f.pkg,st:'Enquiry',src:f.src,val:f.bud,pay:mkPay(0,['2027-01-01','2027-02-01','2027-03-01'],[0,0,0]),design:{theme:f.theme,decor:[],menu:[],notes:''}}));});setF(init);toast('Enquiry saved','ok');};
+  const sendAgreement=wid=>{update(s=>{const w=s.w.find(x=>x.id===wid);if(w)w.st='Agreement';});toast('Agreement sent','ok');};
+  const statusFor=w=>{
+    if(w.st==='Completed')return{type:'ok',text:'Completed'};
+    if(w.signed)return{type:'ok',text:'Signed'};
+    if(w.st==='Agreement')return{type:'warn',text:'Agreement sent'};
+    if(w.st==='Confirmed')return{type:'info',text:'Confirmed'};
+    return{type:'neutral',text:'New enquiry'};
+  };
+  return html`<div className="grid g2">
+    <div className="card">
+      <div className="sec-hd"><h3>New enquiry</h3></div>
+      <div className="grid g2">
+        <${Field} label="Couple names" value=${f.c} onChange=${v=>sf('c',v)} placeholder="e.g. Priya and Rahul"/>
+        <${Field} label="Phone" value=${f.phone} onChange=${v=>sf('phone',v)} placeholder="+91 98xxx xxxxx"/>
+        <${Field} label="How they found us" value=${f.src} onChange=${v=>sf('src',v)} options=${SOURCES}/>
+        <${Field} label="Preferred date" type="date" value=${f.d} onChange=${v=>sf('d',v)}/>
+        <${Field} label="Guest count" type="number" value=${f.g} onChange=${v=>sf('g',Math.max(1,+v||1))}/>
+        <${Field} label="Max budget (Rs. L)" type="number" value=${f.bud} onChange=${v=>sf('bud',Math.max(1,+v||1))}/>
+        <${Field} label="Theme preference" value=${f.theme} onChange=${v=>sf('theme',v)} options=${THEMES}/>
+        <${Field} label="City" value=${f.city} onChange=${v=>sf('city',v)} options=${CITIES}/>
+        <${Field} label="Package" value=${f.pkg} onChange=${v=>sf('pkg',v)} options=${PKGS}/>
+      </div>
+      <button className="btn btn-pri" style=${{marginTop:14,width:'100%'}} disabled=${!valid} onClick=${save}>Save enquiry</button>
+    </div>
+    <div className="card">
+      <div className="sec-hd"><h3>Pipeline</h3><${Badge} type="info">${S.w.length} total</div></div>
+      ${S.w.map(w=>{const st=statusFor(w);const days=Math.round((new Date(w.d)-new Date(TODAY))/864e5);
+        return html`<div key=${w.id} className="row">
+          <div className="row-left" style=${{flex:1,minWidth:0}}>
+            <span style=${{fontWeight:600}}>${w.c}</span>
+            <span style=${{fontSize:'.8rem',color:'var(--muted)'}}>${w.city} · ${fmtDate(w.d)} · ${w.g} guests</span>
+            <span style=${{fontSize:'.78rem',color:'var(--sub)'}}>via ${w.src} · ${days>0?days+' days away':'past'}</span>
+          </div>
+          <span style=${{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}}>
+            <${Badge} type=${st.type}>${st.text}<//>
+            ${w.st==='Enquiry'&&html`<button className="btn btn-sm" onClick=${()=>sendAgreement(w.id)}>Send agreement</button>`}
+            <button className="btn btn-sm btn-pri" onClick=${()=>navTo(w.id,'overview')}>Open</button>
+          </span>
+        </div>`;
+      })}
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   DASHBOARD (Founder)
+════════════════════════════════════════ */
+function Dashboard({S}){
+  const[copied,setCopied]=useState(false);
+  const active=S.w.filter(w=>w.st!=='Enquiry');
+  const profitData=active.map(w=>({w,profit:wRev(w)-wCost(w)}));
+  const maxAbs=Math.max(...profitData.map(x=>Math.abs(x.profit)),1);
+  const totalRev=active.reduce((s,w)=>s+wRev(w),0);
+  const totalCost=active.reduce((s,w)=>s+wCost(w),0);
+  const totalProfit=totalRev-totalCost;
+  const vendorRatings={};
+  S.w.forEach(w=>w.vs.forEach(v=>{if(v.r>0){(vendorRatings[v.n]=vendorRatings[v.n]||[]).push(v.r);}}));
+  const leaderboard=Object.entries(vendorRatings).map(([n,a])=>({n,avg:a.reduce((s,x)=>s+x,0)/a.length,count:a.length})).sort((a,b)=>b.avg-a.avg).slice(0,8);
+  const cf=[];
+  S.w.forEach(w=>{if(w.st==='Enquiry')return;const rv=wRev(w);w.pay.forEach(p=>{if(!p.paid)cf.push({d:p.due,label:w.c+' — '+p.n,amt:rv*p.pct/100,dir:'in'});});w.vs.forEach(v=>{const r=+(v.b||v.a)-v.p;if(r>0.001)cf.push({d:w.d,label:v.n+' · '+w.c,amt:r,dir:'out'});});});
+  cf.sort((a,b)=>a.d<b.d?-1:1);
+  const summary='Royal Knot Season Summary\n'+'='.repeat(28)+'\nWeddings: '+active.length+'\nRevenue: '+fmtMoney(totalRev)+'\nCosts: '+fmtMoney(totalCost)+'\nProfit: '+fmtMoney(totalProfit)+'\n\nPer wedding:\n'+profitData.map(x=>'  '+x.w.c+': '+fmtMoney(x.profit)+' ('+(wRev(x.w)>0?Math.round(x.profit/wRev(x.w)*100):0)+'%)').join('\n');
+  const copyReport=()=>{navigator.clipboard.writeText(summary).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);}).catch(()=>{});};
+
+  return html`<div className="grid">
+    <div className="grid g4">
+      <div className="card card-gold"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Season revenue</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',color:'var(--gold)',fontWeight:700}}>${fmtMoney(totalRev)}</div></div>
+      <div className="card" style=${{background:totalProfit>=0?'var(--ok-bg)':'var(--bad-bg)'}}><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Net profit</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',color:totalProfit>=0?'var(--ok)':'var(--bad)',fontWeight:700}}>${fmtMoney(totalProfit)}</div></div>
+      <div className="card"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Active weddings</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',fontWeight:700}}>${active.length}</div></div>
+      <div className="card"><div style=${{fontSize:'.75rem',fontWeight:700,color:'var(--sub)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:6}}>Margin</div><div style=${{fontFamily:"'Playfair Display',serif",fontSize:'1.8rem',fontWeight:700}}>${totalRev>0?Math.round(totalProfit/totalRev*100):0}%</div></div>
+    </div>
+
+    <div className="grid g2">
+      <div className="card">
+        <div className="sec-hd"><h3>Profit per wedding</h3><button className="btn btn-sm" onClick=${copyReport}>${copied?'Copied!':'Copy report'}</button></div>
+        ${profitData.length===0&&html`<div className="empty"><p>No active weddings.</p></div>`}
+        ${profitData.map(({w,profit})=>{const pct=wRev(w)>0?Math.round(profit/wRev(w)*100):0;const barW=Math.round(Math.abs(profit)/maxAbs*100);
+          return html`<div key=${w.id} style=${{marginBottom:16}}>
+            <div style=${{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:6}}>
+              <span style=${{fontWeight:600}}>${w.c}</span>
+              <span style=${{fontSize:'.85rem'}}><span style=${{color:profit>=0?'var(--ok)':'var(--bad)',fontWeight:600}}>${fmtMoney(profit)}</span><span style=${{color:'var(--muted)',marginLeft:6}}>(${pct}%)</span></span>
+            </div>
+            <div className="bar"><div className=${'bar-fill'+(profit<0?' bad':'')} style=${{width:barW+'%'}}></div></div>
+          </div>`;
+        })}
+      </div>
+      <div className="card">
+        <div className="sec-hd"><h3>Vendor performance</h3></div>
+        ${leaderboard.length===0&&html`<div className="empty"><p>No ratings yet.</p></div>`}
+        ${leaderboard.map((v,i)=>html`<div key=${v.n} className="row">
+          <span style=${{display:'flex',gap:10,alignItems:'center'}}><span style=${{color:'var(--muted)',fontSize:'.8rem',width:18,textAlign:'right'}}>#${i+1}</span><span style=${{fontWeight:500}}>${v.n}</span></span>
+          <span style=${{display:'flex',gap:8,alignItems:'center'}}>
+            <span style=${{color:'var(--gold)',fontSize:'.95rem'}}>★</span>
+            <b style=${{fontSize:'.9rem'}}>${v.avg.toFixed(1)}</b>
+            <span style=${{color:'var(--muted)',fontSize:'.78rem'}}>(${v.count})</span>
+          </span>
+        </div>`)}
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="sec-hd"><h3>Upcoming cashflow</h3></div>
+      ${cf.length===0&&html`<div className="empty"><p>No upcoming payments.</p></div>`}
+      ${cf.slice(0,15).map((item,i)=>html`<div key=${i} className="tl-item">
+        <div className=${'tl-dot dot-'+(item.dir==='in'?'ok':'warn')}></div>
+        <div className="tl-body">
+          <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>
+            <span style=${{fontWeight:500,fontSize:'.9rem'}}>${item.label}</span>
+            <span><${Badge} type=${item.dir==='in'?'ok':'warn'}>${item.dir==='in'?'Receive':'Pay'}</div><b style=${{marginLeft:8,color:item.dir==='in'?'var(--ok)':'var(--warn)'}}>${fmtMoney(item.amt)}</b></span>
+          </div>
+          <div className="tl-date">${fmtDate(item.d)}</div>
+        </div>
+      </div>`)}
+    </div>
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
