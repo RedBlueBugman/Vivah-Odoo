@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+
+enum EnquiryStatus {
+  LEAD
+  QUALIFIED
+  BOOKED
+  LOST
+}
+
+enum WeddingStatus {
+  PLANNING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum RFQStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum RFQVendorStatus {
+  INVITED
+  QUOTE_RECEIVED
+  DECLINED
+  NOT_SELECTED
+  SELECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// --- MODELS ---
+
+model VendorCategory {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  vendors Vendor[]
+}
+
+model Vendor {
+  id                String          @id @default(cuid())
+  name              String
+  categoryId        String
+  category          VendorCategory  @relation(fields: [categoryId], references: [id])
+  contactPerson     String
+  email             String          @unique
+  phone             String
+  rating            Int?
+  paymentPreference String?
+  quotes            Quote[]
+  rfqInvites        RFQVendor[]
+  weddings          WeddingVendor[]
+}
+
+model Enquiry {
+  id           String        @id @default(cuid())
+  clientName   String
+  email        String
+  phone        String
+  eventDate    DateTime?
+  estimatedPax Int?
+  budget       Decimal?      @db.Decimal(15, 2)
+  status       EnquiryStatus @default(LEAD)
+  createdAt    DateTime      @default(now())
+}
+
+model Wedding {
+  id           String            @id @default(cuid())
+  coupleName   String
+  venueCity    String
+  startDate    DateTime
+  endDate      DateTime
+  totalBudget  Decimal           @db.Decimal(15, 2)
+  status       WeddingStatus     @default(PLANNING)
+  functions    WeddingFunction[]
+  tasks        Task[]
+  hiredVendors WeddingVendor[]
+  rfqs         RFQ[]
+}
+
+model WeddingFunction {
+  id        String          @id @default(cuid())
+  weddingId String
+  wedding   Wedding         @relation(fields: [weddingId], references: [id])
+  name      String
+  date      DateTime
+  pax       Int
+  venue     String
+  timeline  TimelineEvent[]
+}
+
+model Task {
+  id        String     @id @default(cuid())
+  weddingId String
+  wedding   Wedding    @relation(fields: [weddingId], references: [id])
+  title     String
+  dueDate   DateTime
+  status    TaskStatus @default(TODO)
+}
+
+model RFQ {
+  id          String      @id @default(cuid())
+  weddingId   String
+  wedding     Wedding     @relation(fields: [weddingId], references: [id])
+  category    String
+  description String?
+  status      RFQStatus   @default(DRAFT)
+  vendors     RFQVendor[]
+  quotes      Quote[]
+}
+
+model RFQVendor {
+  id          String          @id @default(cuid())
+  rfqId       String
+  rfq         RFQ             @relation(fields: [rfqId], references: [id])
+  vendorId    String
+  vendor      Vendor          @relation(fields: [vendorId], references: [id])
+  status      RFQVendorStatus @default(INVITED)
+  invitedAt   DateTime        @default(now())
+  respondedAt DateTime?
+
+  @@unique([rfqId, vendorId])
+}
+
+model Quote {
+  id               String   @id @default(cuid())
+  rfqId            String
+  rfq              RFQ      @relation(fields: [rfqId], references: [id])
+  vendorId         String
+  vendor           Vendor   @relation(fields: [vendorId], references: [id])
+  totalAmount      Decimal  @db.Decimal(15, 2)
+  effectiveCostPax Decimal? @db.Decimal(15, 2)
+  notes            String?
+  isWinner         Boolean  @default(false)
+  submittedAt      DateTime @default(now())
+}
+
+model WeddingVendor {
+  id            String                 @id @default(cuid())
+  weddingId     String
+  wedding       Wedding                @relation(fields: [weddingId], references: [id])
+  vendorId      String
+  vendor        Vendor                 @relation(fields: [vendorId], references: [id])
+  contractValue Decimal                @db.Decimal(15, 2)
+  payments      VendorPaymentTranche[]
+}
+
+model VendorPaymentTranche {
+  id              String        @id @default(cuid())
+  weddingVendorId String
+  weddingVendor   WeddingVendor @relation(fields: [weddingVendorId], references: [id])
+  amount          Decimal       @db.Decimal(15, 2)
+  dueDate         DateTime
+  status          PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  referenceNumber String?
+}
+
+model TimelineEvent {
+  id         String          @id @default(cuid())
+  functionId String
+  function   WeddingFunction @relation(fields: [functionId], references: [id])
+  startTime  DateTime
+  endTime    DateTime
+  activity   String
+  checkIns   CheckIn[]
+}
+
+model CheckIn {
+  id              String        @id @default(cuid())
+  timelineEventId String
+  timelineEvent   TimelineEvent @relation(fields: [timelineEventId], references: [id])
+  vendorName      String
+  status          String
+  timestamp       DateTime      @default(now())
+  problems        ProblemFlag[]
+}
+
+model ProblemFlag {
+  id        String   @id @default(cuid())
+  checkInId String
+  checkIn   CheckIn  @relation(fields: [checkInId], references: [id])
+  issue     String
+  severity  Severity @default(MEDIUM)
+  isSolved  Boolean  @default(false)
+}
