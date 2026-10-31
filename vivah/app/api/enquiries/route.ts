@@ -15,7 +15,10 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { clientName, email, phone, eventDate, estimatedPax, budget } = await req.json();
+    const {
+      clientName, email, phone,
+      eventDate, estimatedPax, budget, cuisine,
+    } = await req.json();
 
     if (!clientName || !email || !phone) {
       return NextResponse.json(
@@ -32,6 +35,7 @@ export async function POST(req: NextRequest) {
         eventDate:    eventDate    ? new Date(eventDate) : null,
         estimatedPax: estimatedPax ? Number(estimatedPax) : null,
         budget:       budget       ? Number(budget) : null,
+        cuisine:      cuisine      || null,
         status: "LEAD",
       },
     });

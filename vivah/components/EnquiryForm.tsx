@@ -4,13 +4,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useToast } from "./Toast";
 
+const CUISINE_OPTIONS = [
+  "Rajasthani", "Mughlai", "North Indian", "South Indian",
+  "Continental", "Chinese", "Italian", "Mediterranean",
+  "Live Counters", "Chaat Station", "BBQ & Grills",
+  "Dessert Station", "Jain Options", "Vegan Options",
+];
+
 interface FormState {
-  clientName: string;
-  email: string;
-  phone: string;
-  eventDate: string;
+  clientName:   string;
+  email:        string;
+  phone:        string;
+  eventDate:    string;
   estimatedPax: string;
-  budget: string;
+  budget:       string;
 }
 
 const EMPTY: FormState = {
@@ -19,19 +26,28 @@ const EMPTY: FormState = {
 };
 
 export function EnquiryForm({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState<FormState>(EMPTY);
-  const [errors, setErrors] = useState<Partial<FormState>>({});
-  const qc = useQueryClient();
+  const [form, setForm]         = useState<FormState>(EMPTY);
+  const [cuisines, setCuisines] = useState<string[]>([]);
+  const [errors, setErrors]     = useState<Partial<FormState>>({});
+  const qc     = useQueryClient();
   const { toast } = useToast();
 
-  const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const toggleCuisine = (c: string) =>
+    setCuisines((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+    );
 
   const validate = (): boolean => {
     const errs: Partial<FormState> = {};
     if (!form.clientName.trim()) errs.clientName = "Name is required";
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) errs.email = "Valid email required";
-    if (!form.phone.trim() || form.phone.length < 10) errs.phone = "Valid 10-digit phone required";
+    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
+      errs.email = "Valid email required";
+    if (!form.phone.trim() || form.phone.length < 10)
+      errs.phone = "Valid 10-digit phone required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -42,9 +58,10 @@ export function EnquiryForm({ onClose }: { onClose: () => void }) {
         clientName:   data.clientName,
         email:        data.email,
         phone:        data.phone,
-        eventDate:    data.eventDate   || undefined,
+        eventDate:    data.eventDate    || undefined,
         estimatedPax: data.estimatedPax ? Number(data.estimatedPax) : undefined,
         budget:       data.budget       ? Number(data.budget) * 100000 : undefined,
+        cuisine:      cuisines.length   ? cuisines.join(",") : undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["enquiries"] });
@@ -115,9 +132,9 @@ export function EnquiryForm({ onClose }: { onClose: () => void }) {
 
       {/* Budget */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Budget (₹ Lakhs)</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Budget (&#8377; Lakhs)</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">&#8377;</span>
           <input
             type="number" value={form.budget} onChange={set("budget")}
             placeholder="50"
@@ -125,7 +142,29 @@ export function EnquiryForm({ onClose }: { onClose: () => void }) {
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">L</span>
         </div>
-        <p className="text-xs text-gray-400 mt-1">Enter in lakhs — e.g. 50 = ₹50,00,000</p>
+        <p className="text-xs text-gray-400 mt-1">Enter in lakhs e.g. 50 = &#8377;50,00,000</p>
+      </div>
+
+      {/* Cuisine Tags */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-2">Cuisine Preferences</label>
+        <div className="flex flex-wrap gap-2">
+          {CUISINE_OPTIONS.map((c) => (
+            <button
+              key={c} type="button" onClick={() => toggleCuisine(c)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                cuisines.includes(c)
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        {cuisines.length > 0 && (
+          <p className="text-xs text-gray-400 mt-2">Selected: {cuisines.join(", ")}</p>
+        )}
       </div>
 
       {/* Actions */}
@@ -137,8 +176,7 @@ export function EnquiryForm({ onClose }: { onClose: () => void }) {
           Cancel
         </button>
         <button
-          type="submit"
-          disabled={mutation.isPending}
+          type="submit" disabled={mutation.isPending}
           className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60"
         >
           {mutation.isPending ? "Saving..." : "Capture Enquiry"}

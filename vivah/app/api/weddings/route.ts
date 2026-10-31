@@ -20,7 +20,10 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { coupleName, venueCity, startDate, endDate, totalBudget } = await req.json();
+    const {
+      coupleName, venueCity, venueName,
+      startDate, endDate, totalBudget, cuisine,
+    } = await req.json();
 
     if (!coupleName || !venueCity || !startDate || !endDate || !totalBudget) {
       return NextResponse.json(
@@ -33,9 +36,11 @@ export async function POST(req: NextRequest) {
       data: {
         coupleName,
         venueCity,
+        venueName:   venueName   || null,
         startDate:   new Date(startDate),
         endDate:     new Date(endDate),
         totalBudget: Number(totalBudget),
+        cuisine:     cuisine     || null,
         status:      "PLANNING",
       },
     });
