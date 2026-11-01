@@ -1,447 +1,390 @@
 "use client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import { useToast } from "@/components/Toast";
+import axios from "axios";
+import DesignStudio from "@/components/design/DesignStudio";
 
-const TABS = ["Overview", "Functions", "Tasks", "Vendors", "RFQs"] as const;
-type Tab = typeof TABS[number];
-
-const FUNCTION_NAMES = ["Mehendi", "Haldi", "Sangeet", "Baraat", "Wedding & Reception", "Baraat & Ceremony", "Cocktail Evening", "Custom"];
-
-const TASK_STATUS_STYLE: Record<string, string> = {
-  TODO:        "bg-gray-100 text-gray-600",
-  IN_PROGRESS: "bg-blue-100 text-blue-700",
-  COMPLETED:   "bg-green-100 text-green-700",
-  DELAYED:     "bg-red-100 text-red-600",
-};
-
-const PAYMENT_STATUS_STYLE: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-700",
-  PAID:    "bg-green-100 text-green-700",
-  OVERDUE: "bg-red-100 text-red-600",
-};
-
-function MarkPaidInline({ trancheId, onDone }: { trancheId: string; onDone: () => void }) {
-  const [ref, setRef] = useState("");
-  const { toast } = useToast();
-  const mutation = useMutation({
-    mutationFn: () => axios.patch(`/api/payments/${trancheId}`, { referenceNumber: ref }),
-    onSuccess: () => { toast("Payment marked as paid"); onDone(); },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.error ?? "Failed to mark payment";
-      toast(msg, "error");
-    },
-  });
-  return (
-    <div className="flex items-center gap-2 mt-2">
-      <input
-        value={ref}
-        onChange={(e) => setRef(e.target.value)}
-        placeholder="Reference / UTR number"
-        className="flex-1 px-2 py-1 text-xs border border-gray-200 rounded-lg outline-none focus:border-primary"
-      />
-      <button
-        onClick={() => ref.trim() && mutation.mutate()}
-        disabled={!ref.trim() || mutation.isPending}
-        className="px-3 py-1 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
-      >
-        {mutation.isPending ? "..." : "Mark Paid"}
-      </button>
-    </div>
-  );
+interface Task { id: string; title: string; dueDate?: string; status: string; assignedTo?: string; }
+interface Vendor { id: string; name: string; category: string; phone?: string; email?: string; }
+interface WeddingVendor { id: string; vendor: Vendor; status: string; contractValue?: number; notes?: string; }
+interface Payment { id: string; amount: number; paidAt: string; method: string; reference?: string; note?: string; }
+interface WeddingFunction { id: string; name: string; date: string; headcount: number; venue?: string; }
+interface Wedding {
+  id: string; coupleName: string; eventDate: string; status: string;
+  budget: number; venue?: string; cuisine?: string; notes?: string;
+  tasks: Task[]; weddingVendors: WeddingVendor[]; payments: Payment[];
+  weddingFunctions: WeddingFunction[];
 }
 
-const EMPTY_FN = { name: "", customName: "", date: "", venue: "", pax: "" };
+const TABS = ["Overview", "Tasks", "Vendors", "Payments", "Functions", "Design"];
 
+const S = {
+  hero: {
+    background: "linear-gradient(135deg, #2c1a0e 0%, #5a2d1a 55%, #b8832a 100%)",
+    borderRadius: "20px",
+    padding: "40px 48px",
+    marginBottom: "32px",
+    position: "relative" as const,
+    overflow: "hidden",
+  } as React.CSSProperties,
+  heroLabel: {
+    fontSize: "0.68rem", fontWeight: 700, letterSpacing: "2.5px",
+    textTransform: "uppercase" as const, color: "var(--gold2)",
+    marginBottom: "12px",
+  } as React.CSSProperties,
+  heroCouple: {
+    fontFamily: "Playfair Display, serif",
+    fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
+    fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: "12px",
+  } as React.CSSProperties,
+  heroMeta: { display: "flex", gap: "24px", flexWrap: "wrap" as const, alignItems: "center", marginTop: "20px" },
+  heroPill: (color: string) => ({
+    fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.8px",
+    textTransform: "uppercase" as const, padding: "5px 14px",
+    borderRadius: "20px", background: color + "25", color: color,
+    border: `1px solid ${color}55`,
+  }),
+  heroStat: {
+    textAlign: "right" as const,
+    position: "absolute" as const, top: "40px", right: "48px",
+  } as React.CSSProperties,
+  heroStatVal: {
+    fontFamily: "Playfair Display, serif", fontSize: "2rem",
+    fontWeight: 700, color: "var(--gold2)", lineHeight: 1,
+  } as React.CSSProperties,
+  heroStatLabel: { fontSize: "0.68rem", color: "rgba(255,255,255,0.5)", letterSpacing: "1px", textTransform: "uppercase" as const },
+  tabBar: {
+    display: "flex", gap: "0", marginBottom: "28px",
+    borderBottom: "2px solid #e8d5b7",
+  } as React.CSSProperties,
+  tab: (active: boolean) => ({
+    padding: "10px 20px", fontSize: "0.78rem", fontWeight: 700,
+    letterSpacing: "0.8px", textTransform: "uppercase" as const,
+    cursor: "pointer", border: "none", background: "transparent",
+    color: active ? "var(--rose)" : "var(--text)",
+    opacity: active ? 1 : 0.45,
+    borderBottom: active ? "2px solid var(--rose)" : "2px solid transparent",
+    marginBottom: "-2px", transition: "all 0.15s",
+  } as React.CSSProperties),
+  card: {
+    background: "var(--surface)", border: "1px solid #e8d5b7",
+    borderRadius: "14px", padding: "20px", marginBottom: "14px",
+    boxShadow: "0 2px 8px #b8832a08",
+  } as React.CSSProperties,
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" } as React.CSSProperties,
+  label: {
+    fontSize: "0.65rem", fontWeight: 700, letterSpacing: "1.2px",
+    textTransform: "uppercase" as const, color: "var(--gold)", marginBottom: "4px",
+  },
+  value: { fontSize: "0.95rem", color: "var(--text)", fontWeight: 500 } as React.CSSProperties,
+  sectionTitle: {
+    fontFamily: "Playfair Display, serif", fontSize: "1.1rem",
+    fontWeight: 700, color: "var(--text)", marginBottom: "16px",
+  } as React.CSSProperties,
+  pill: (color: string) => ({
+    fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.6px",
+    textTransform: "uppercase" as const, padding: "3px 10px",
+    borderRadius: "20px", background: color + "18", color: color,
+    display: "inline-block",
+  }),
+  input: {
+    width: "100%", padding: "10px 14px", border: "1.5px solid #e8d5b7",
+    borderRadius: "10px", fontSize: "0.875rem", background: "var(--bg)",
+    color: "var(--text)", outline: "none", boxSizing: "border-box" as const,
+    fontFamily: "Inter, sans-serif",
+  } as React.CSSProperties,
+  btn: (variant: "primary" | "ghost") => ({
+    padding: "10px 20px", borderRadius: "10px", fontSize: "0.82rem",
+    fontWeight: 700, cursor: "pointer", border: "none", letterSpacing: "0.4px",
+    background: variant === "primary" ? "var(--rose)" : "transparent",
+    color: variant === "primary" ? "#fff" : "var(--rose)",
+    border_: variant === "ghost" ? "1.5px solid var(--rose)" : "none",
+  } as React.CSSProperties),
+};
+
+function fmt(n: number | undefined | null) {
+  if (!n || isNaN(n)) return "₹0";
+  if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)}Cr`;
+  if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+function statusColor(s: string) {
+  const m: Record<string, string> = {
+    ACTIVE: "var(--ok)", COMPLETED: "var(--gold)", CANCELLED: "var(--bad)",
+    PENDING: "var(--gold)", DONE: "var(--ok)", CONFIRMED: "var(--ok)",
+    NEW: "var(--rose)", PAID: "var(--ok)", PARTIAL: "var(--gold)",
+  };
+  return m[s] ?? "var(--text)";
+}
 export default function WeddingDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [tab, setTab]         = useState<Tab>("Overview");
-  const [payingId, setPayingId] = useState<string | null>(null);
-  const [showAddFn, setShowAddFn] = useState(false);
-  const [fnForm, setFnForm]   = useState(EMPTY_FN);
-  const qc = useQueryClient();
-  const { toast } = useToast();
+  const [wedding, setWedding] = useState<Wedding | null>(null);
+  const [activeTab, setActiveTab] = useState("Overview");
+  const [loading, setLoading] = useState(true);
+  const [newTask, setNewTask] = useState({ title: "", dueDate: "", assignedTo: "" });
+  const [newPayment, setNewPayment] = useState({ amount: "", method: "CASH", reference: "", note: "" });
+  const [newFunction, setNewFunction] = useState({ name: "", date: "", headcount: "", venue: "" });
+  const [saving, setSaving] = useState(false);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["wedding", id],
-    queryFn: () => axios.get(`/api/weddings/${id}`).then((r) => r.data),
-    enabled: !!id,
-  });
-
-  const addFnMutation = useMutation({
-    mutationFn: () => {
-      const name = fnForm.name === "Custom" ? fnForm.customName : fnForm.name;
-      return axios.post(`/api/weddings/${id}/functions`, {
-        name,
-        date:  fnForm.date,
-        venue: fnForm.venue,
-        pax:   Number(fnForm.pax),
+  function load() {
+    axios.get(`/api/weddings/${id}`).then(r => {
+      const raw = r.data.wedding ?? r.data;
+      setWedding({
+        ...raw,
+        budget:           raw.totalBudget ?? raw.budget ?? 0,
+        venue:            raw.venueCity ?? raw.venue ?? "",
+        tasks:            raw.tasks ?? [],
+        weddingFunctions: raw.functions ?? raw.weddingFunctions ?? [],
+        weddingVendors:   (raw.hiredVendors ?? raw.weddingVendors ?? []).map((hv: any) => ({
+          ...hv,
+          vendor: { ...hv.vendor, category: hv.vendor?.category?.name ?? hv.vendor?.category ?? "" },
+          contractValue: hv.agreedAmount ?? hv.contractValue ?? 0,
+        })),
+        payments: raw.payments ?? [],
       });
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["wedding", id] });
-      toast("Function added");
-      setShowAddFn(false);
-      setFnForm(EMPTY_FN);
-    },
-    onError: () => toast("Failed to add function", "error"),
-  });
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }
+  useEffect(() => { if (id) load(); }, [id]);
 
-  const setFn = (k: keyof typeof EMPTY_FN) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setFnForm((f) => ({ ...f, [k]: e.target.value }));
+  async function addTask(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true);
+    await axios.post(`/api/weddings/${id}/tasks`, { ...newTask });
+    setNewTask({ title: "", dueDate: "", assignedTo: "" }); load(); setSaving(false);
+  }
+  async function toggleTask(tid: string, status: string) {
+    await axios.patch(`/api/weddings/${id}/tasks/${tid}`, { status: status === "DONE" ? "PENDING" : "DONE" }); load();
+  }
+  async function addPayment(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true);
+    await axios.post(`/api/weddings/${id}/payments`, { ...newPayment, amount: Number(newPayment.amount) });
+    setNewPayment({ amount: "", method: "CASH", reference: "", note: "" }); load(); setSaving(false);
+  }
+  async function addFunction(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true);
+    await axios.post(`/api/weddings/${id}/functions`, { ...newFunction, headcount: Number(newFunction.headcount) });
+    setNewFunction({ name: "", date: "", headcount: "", venue: "" }); load(); setSaving(false);
+  }
 
-  const w = data?.wedding;
-
-  if (isLoading) return (
-    <div className="space-y-4">
-      <div className="h-6 w-32 bg-gray-200 animate-pulse rounded" />
-      <div className="h-40 bg-gray-100 animate-pulse rounded-xl" />
+  if (loading) return (
+    <div style={{ textAlign: "center", padding: "80px", fontFamily: "Playfair Display, serif", color: "var(--gold)", fontSize: "1.2rem" }}>
+      Loading wedding details…
     </div>
   );
-  if (isError || !w) return <p className="text-red-500 text-sm">Wedding not found.</p>;
+  if (!wedding) return <div style={{ textAlign: "center", padding: "80px", opacity: 0.4 }}>Wedding not found.</div>;
 
-  const totalCommitted = w.hiredVendors.reduce((s: number, wv: any) => s + Number(wv.contractValue), 0);
-  const totalPaid      = w.hiredVendors.reduce((s: number, wv: any) =>
-    s + wv.payments.filter((p: any) => p.status === "PAID").reduce((ps: number, p: any) => ps + Number(p.amount), 0), 0);
-  const remaining = Number(w.totalBudget) - totalCommitted;
+  const totalPaid = (wedding.payments ?? []).reduce((s, p) => s + p.amount, 0);
+  const pax = wedding.weddingFunctions?.reduce((s, f) => s + f.headcount, 0) ?? 0;
 
-  const canSubmitFn = fnForm.name && fnForm.date && fnForm.venue && fnForm.pax &&
-    (fnForm.name !== "Custom" || fnForm.customName.trim());
   return (
     <div>
-      <Link href="/weddings" className="text-xs text-primary hover:underline mb-4 inline-block">
-        ← Back to Weddings
-      </Link>
-
-      {/* Header */}
-      <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">{w.coupleName}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {w.venueCity}{w.venueName ? ` · ${w.venueName}` : ""} ·{" "}
-              {new Date(w.startDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}
-              {" "}→{" "}
-              {new Date(w.endDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}
-            </p>
-            {w.cuisine && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {w.cuisine.split(",").map((c: string) => (
-                  <span key={c} className="text-xs px-2 py-0.5 bg-secondary/10 text-secondary rounded-full font-medium">{c}</span>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">{w.status}</span>
-            <Link
-              href={`/dayof/${w.id}`}
-              className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-            >
-              ⚡ Day-of
-            </Link>
-          </div>
+      {/* Hero Banner */}
+      <div style={S.hero}>
+        <div style={S.heroLabel}>Wedding File · {(id ?? "").slice(-6).toUpperCase()}</div>
+        <div style={S.heroCouple}>{wedding.coupleName}</div>
+        <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.9rem" }}>
+          {wedding.venue ?? "Venue TBD"} {wedding.cuisine ? `· ${wedding.cuisine}` : ""}
         </div>
-
-        <div className="mt-5 grid grid-cols-4 gap-4">
-          {[
-            { label: "Total Budget", value: `₹${(Number(w.totalBudget)/100000).toFixed(1)}L`, color: "text-gray-900" },
-            { label: "Committed",    value: `₹${(totalCommitted/100000).toFixed(1)}L`,         color: "text-primary" },
-            { label: "Paid Out",     value: `₹${(totalPaid/100000).toFixed(1)}L`,              color: "text-green-600" },
-            { label: "Unallocated",  value: `₹${(remaining/100000).toFixed(1)}L`,              color: remaining < 0 ? "text-red-600" : "text-gray-600" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="bg-muted rounded-lg p-3">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`text-xl font-bold ${color}`}>{value}</p>
-            </div>
-          ))}
+        <div style={S.heroMeta}>
+          <span style={S.heroPill(statusColor(wedding.status))}>{wedding.status}</span>
+          <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.82rem" }}>
+            📅 {new Date(wedding.eventDate).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          </span>
+          {pax > 0 && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.82rem" }}>👥 {pax} pax</span>}
+        </div>
+        <div style={S.heroStat}>
+          <div style={S.heroStatVal}>{fmt(wedding.budget)}</div>
+          <div style={S.heroStatLabel}>Total Budget</div>
+          <div style={{ ...S.heroStatVal, fontSize: "1.2rem", marginTop: "8px", color: totalPaid >= wedding.budget ? "var(--ok)" : "var(--gold2)" }}>
+            {fmt(totalPaid)}
+          </div>
+          <div style={S.heroStatLabel}>Collected</div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-muted p-1 rounded-lg w-fit">
-        {TABS.map((t) => (
-          <button
-            key={t} onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-              tab === t ? "bg-white text-primary shadow-sm" : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {t}
-          </button>
+      {/* Tab Bar */}
+      <div style={S.tabBar}>
+        {TABS.map(t => (
+          <button key={t} style={S.tab(activeTab === t)} onClick={() => setActiveTab(t)}>{t}</button>
         ))}
       </div>
 
-      {/* Overview */}
-      {tab === "Overview" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {w.functions.length === 0 ? (
-            <div className="col-span-3 text-center py-12 bg-white rounded-xl border border-gray-100">
-              <p className="text-gray-400 text-sm">No functions yet.</p>
-              <button onClick={() => setTab("Functions")} className="mt-2 text-xs text-primary hover:underline">
-                Add the first function →
-              </button>
-            </div>
-          ) : (
-            w.functions.map((f: any) => (
-              <div key={f.id} className="bg-white rounded-xl border border-gray-100 p-5">
-                <p className="font-semibold text-gray-900">{f.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(f.date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}
-                </p>
-                <p className="text-xs text-gray-500 mt-2">{f.venue}</p>
-                <p className="text-2xl font-bold text-primary mt-3">
-                  {f.pax}<span className="text-sm font-normal text-gray-400"> pax</span>
-                </p>
-                <p className="text-xs text-gray-400 mt-1">{f.timeline?.length ?? 0} timeline events</p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Functions */}
-      {tab === "Functions" && (
-        <div className="space-y-4">
-          {/* Existing functions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {w.functions.map((f: any) => (
-              <div key={f.id} className="bg-white rounded-xl border border-gray-100 p-5">
-                <p className="font-semibold text-gray-900">{f.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(f.date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric"})}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">{f.venue}</p>
-                <p className="text-2xl font-bold text-primary mt-3">
-                  {f.pax}<span className="text-sm font-normal text-gray-400"> pax</span>
-                </p>
+      {/* Overview Tab */}
+      {activeTab === "Overview" && (
+        <div>
+          <div style={S.grid2}>
+            {[
+              ["Couple", wedding.coupleName], ["Status", wedding.status],
+              ["Event Date", new Date(wedding.eventDate).toLocaleDateString("en-IN")],
+              ["Venue", wedding.venue ?? "TBD"], ["Cuisine", wedding.cuisine ?? "TBD"],
+              ["Budget", fmt(wedding.budget)], ["Collected", fmt(totalPaid)],
+              ["Balance", fmt(wedding.budget - totalPaid)],
+            ].map(([l, v]) => (
+              <div key={l} style={S.card}>
+                <div style={S.label}>{l}</div>
+                <div style={S.value}>{v}</div>
               </div>
             ))}
           </div>
-
-          {/* Add function form */}
-          {!showAddFn ? (
-            <button
-              onClick={() => setShowAddFn(true)}
-              className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-primary hover:text-primary transition-colors"
-            >
-              + Add Function
-            </button>
-          ) : (
-            <div className="bg-white rounded-xl border border-primary/20 p-5 space-y-4">
-              <p className="font-semibold text-gray-800 text-sm">New Function</p>
-
-              {/* Function name */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Function Name *</label>
-                  <select
-                    value={fnForm.name} onChange={setFn("name")}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
-                  >
-                    <option value="">Select...</option>
-                    {FUNCTION_NAMES.map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </div>
-                {fnForm.name === "Custom" && (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Custom Name *</label>
-                    <input
-                      value={fnForm.customName} onChange={setFn("customName")}
-                      placeholder="e.g. Tilak Ceremony"
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Date + Pax */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Date *</label>
-                  <input
-                    type="date" value={fnForm.date} onChange={setFn("date")}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Guest Count (Pax) *</label>
-                  <input
-                    type="number" value={fnForm.pax} onChange={setFn("pax")}
-                    placeholder="300"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-              </div>
-
-              {/* Venue */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Venue *</label>
-                <input
-                  value={fnForm.venue} onChange={setFn("venue")}
-                  placeholder="e.g. Garden Lawn, Rambagh Palace"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-1">
-                <button
-                  type="button" onClick={() => { setShowAddFn(false); setFnForm(EMPTY_FN); }}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => canSubmitFn && addFnMutation.mutate()}
-                  disabled={!canSubmitFn || addFnMutation.isPending}
-                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50"
-                >
-                  {addFnMutation.isPending ? "Adding..." : "Add Function"}
-                </button>
-              </div>
+          {wedding.notes && (
+            <div style={{ ...S.card, marginTop: "8px", fontStyle: "italic", opacity: 0.7, fontSize: "0.875rem" }}>
+              📝 {wedding.notes}
             </div>
           )}
         </div>
       )}
-      {/* Tasks */}
-      {tab === "Tasks" && (
-        <div className="bg-white rounded-xl border border-gray-100">
-          <div className="p-5 border-b border-gray-50">
-            <p className="font-semibold text-gray-900">{w.tasks.length} Tasks</p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {w.tasks.filter((t: any) => t.status === "COMPLETED").length} completed ·{" "}
-              {w.tasks.filter((t: any) => t.status === "DELAYED").length} delayed
-            </p>
+
+      {/* Tasks Tab */}
+      {activeTab === "Tasks" && (
+        <div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Add Task</div>
+            <form onSubmit={addTask} style={{ display: "flex", gap: "10px", flexWrap: "wrap" as const }}>
+              <input style={{ ...S.input, flex: "2", minWidth: "200px" }} placeholder="Task title" required
+                value={newTask.title} onChange={e => setNewTask(t => ({ ...t, title: e.target.value }))} />
+              <input style={{ ...S.input, flex: "1", minWidth: "140px" }} type="date"
+                value={newTask.dueDate} onChange={e => setNewTask(t => ({ ...t, dueDate: e.target.value }))} />
+              <input style={{ ...S.input, flex: "1", minWidth: "140px" }} placeholder="Assigned to"
+                value={newTask.assignedTo} onChange={e => setNewTask(t => ({ ...t, assignedTo: e.target.value }))} />
+              <button type="submit" style={S.btn("primary")} disabled={saving}>Add</button>
+            </form>
           </div>
-          <div className="divide-y divide-gray-50">
-            {w.tasks.length === 0 ? (
-              <p className="text-sm text-gray-400 p-5">No tasks yet.</p>
-            ) : (
-              w.tasks.map((t: any) => (
-                <div key={t.id} className="flex items-center justify-between px-5 py-3">
-                  <div>
-                    <p className="text-sm text-gray-800">{t.title}</p>
-                    <p className="text-xs text-gray-400">Due {new Date(t.dueDate).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</p>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+            <div style={S.sectionTitle}>{wedding.tasks.length} Tasks</div>
+            <span style={{ fontSize: "0.8rem", color: "var(--ok)", fontWeight: 700 }}>
+              {wedding.tasks.filter(t => t.status === "DONE").length} done
+            </span>
+          </div>
+          {wedding.tasks.map(t => (
+            <div key={t.id} style={{ ...S.card, display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px" }}
+              onClick={() => toggleTask(t.id, t.status)}>
+              <div style={{
+                width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0,
+                background: t.status === "DONE" ? "var(--ok)" : "transparent",
+                border: `2px solid ${t.status === "DONE" ? "var(--ok)" : "#d4a853"}`,
+                cursor: "pointer",
+              }} />
+              <div style={{ flex: 1, textDecoration: t.status === "DONE" ? "line-through" : "none", opacity: t.status === "DONE" ? 0.5 : 1 }}>
+                <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>{t.title}</div>
+                {(t.dueDate || t.assignedTo) && (
+                  <div style={{ fontSize: "0.72rem", color: "var(--text)", opacity: 0.45, marginTop: "3px" }}>
+                    {t.dueDate && `Due: ${new Date(t.dueDate).toLocaleDateString("en-IN")}`}
+                    {t.assignedTo && ` · ${t.assignedTo}`}
                   </div>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TASK_STATUS_STYLE[t.status]}`}>
-                    {t.status.replace("_"," ")}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+                )}
+              </div>
+              <span style={S.pill(statusColor(t.status))}>{t.status}</span>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Vendors */}
-      {tab === "Vendors" && (
-        <div className="space-y-4">
-          {w.hiredVendors.length === 0 ? (
-            <p className="text-sm text-gray-400">No vendors hired yet.</p>
-          ) : (
-            w.hiredVendors.map((wv: any) => (
-              <div key={wv.id} className="bg-white rounded-xl border border-gray-100 p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="font-semibold text-gray-900">{wv.vendor.name}</p>
-                    <p className="text-xs text-gray-400">{wv.vendor.category.name}</p>
-                  </div>
-                  <p className="font-bold text-primary text-lg">
-                    &#8377;{(Number(wv.contractValue)/100000).toFixed(2)}L
-                  </p>
+      {/* Vendors Tab */}
+      {activeTab === "Vendors" && (
+        <div>
+          <div style={S.sectionTitle}>{wedding.weddingVendors.length} Vendors Assigned</div>
+          {wedding.weddingVendors.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px", opacity: 0.35 }}>No vendors assigned yet.</div>
+          )}
+          {wedding.weddingVendors.map(wv => (
+            <div key={wv.id} style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontWeight: 700, color: "var(--text)", fontSize: "0.95rem", marginBottom: "4px" }}>{wv.vendor.name}</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--text)", opacity: 0.5 }}>{wv.vendor.category}</div>
+                {wv.notes && <div style={{ fontSize: "0.72rem", fontStyle: "italic", opacity: 0.4, marginTop: "4px" }}>{wv.notes}</div>}
+              </div>
+              <div style={{ textAlign: "right" as const }}>
+                <span style={S.pill(statusColor(wv.status))}>{wv.status}</span>
+                {wv.contractValue && <div style={{ fontFamily: "Playfair Display, serif", color: "var(--gold)", fontWeight: 700, marginTop: "6px" }}>{fmt(wv.contractValue)}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Payments Tab */}
+      {activeTab === "Payments" && (
+        <div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Record Payment</div>
+            <form onSubmit={addPayment} style={{ display: "flex", gap: "10px", flexWrap: "wrap" as const }}>
+              <input style={{ ...S.input, flex: "1", minWidth: "120px" }} type="number" placeholder="Amount (₹)" required
+                value={newPayment.amount} onChange={e => setNewPayment(p => ({ ...p, amount: e.target.value }))} />
+              <select style={{ ...S.input, flex: "1", minWidth: "100px" }}
+                value={newPayment.method} onChange={e => setNewPayment(p => ({ ...p, method: e.target.value }))}>
+                {["CASH", "BANK_TRANSFER", "CHEQUE", "UPI"].map(m => <option key={m}>{m}</option>)}
+              </select>
+              <input style={{ ...S.input, flex: "1", minWidth: "120px" }} placeholder="Reference #"
+                value={newPayment.reference} onChange={e => setNewPayment(p => ({ ...p, reference: e.target.value }))} />
+              <input style={{ ...S.input, flex: "2", minWidth: "160px" }} placeholder="Note"
+                value={newPayment.note} onChange={e => setNewPayment(p => ({ ...p, note: e.target.value }))} />
+              <button type="submit" style={S.btn("primary")} disabled={saving}>Record</button>
+            </form>
+          </div>
+          <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
+            {[["Total Budget", fmt(wedding.budget), "var(--text)"], ["Collected", fmt(totalPaid), "var(--ok)"], ["Balance", fmt(wedding.budget - totalPaid), totalPaid >= wedding.budget ? "var(--ok)" : "var(--bad)"]].map(([l, v, c]) => (
+              <div key={l} style={{ ...S.card, flex: 1, textAlign: "center" as const }}>
+                <div style={S.label}>{l}</div>
+                <div style={{ fontFamily: "Playfair Display, serif", fontSize: "1.4rem", fontWeight: 700, color: c as string }}>{v}</div>
+              </div>
+            ))}
+          </div>
+          {(wedding.payments ?? []).map((p, i) => (
+            <div key={p.id} style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: "0.72rem", color: "var(--text)", opacity: 0.45, marginBottom: "2px" }}>
+                  {["Advance (30%)", "2nd Payment (40%)", "Final Payment (20%)", "Security Deposit (10%)"][i] ?? `Tranche ${i + 1}`}
                 </div>
-                <div className="space-y-3">
-                  {wv.payments.map((p: any) => (
-                    <div key={p.id} className="border-t border-gray-50 pt-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-sm text-gray-700 font-medium">
-                            &#8377;{Number(p.amount).toLocaleString("en-IN")}
-                          </span>
-                          <span className="text-xs text-gray-400 ml-2">
-                            Due {new Date(p.dueDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {p.referenceNumber && (
-                            <span className="text-xs text-gray-400">{p.referenceNumber}</span>
-                          )}
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${PAYMENT_STATUS_STYLE[p.status]}`}>
-                            {p.status}
-                          </span>
-                          {p.status === "PENDING" && (
-                            <button
-                              onClick={() => setPayingId(payingId === p.id ? null : p.id)}
-                              className="text-xs text-primary hover:underline font-medium"
-                            >
-                              {payingId === p.id ? "Cancel" : "Mark Paid"}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      {payingId === p.id && (
-                        <MarkPaidInline
-                          trancheId={p.id}
-                          onDone={() => {
-                            setPayingId(null);
-                            qc.invalidateQueries({ queryKey: ["wedding", id] });
-                          }}
-                        />
-                      )}
-                      {p.status === "PAID" && p.paidAt && (
-                        <p className="text-xs text-green-600 mt-1">
-                          Paid {new Date(p.paidAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                <div style={{ fontFamily: "Playfair Display, serif", fontSize: "1.1rem", fontWeight: 700, color: "var(--ok)" }}>{fmt(p.amount)}</div>
+                {p.reference && <div style={{ fontSize: "0.72rem", opacity: 0.45 }}>Ref: {p.reference}</div>}
+              </div>
+              <div style={{ textAlign: "right" as const }}>
+                <span style={S.pill("var(--gold)")}>{p.method}</span>
+                <div style={{ fontSize: "0.72rem", opacity: 0.4, marginTop: "6px" }}>{new Date(p.paidAt).toLocaleDateString("en-IN")}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Functions Tab */}
+      {activeTab === "Functions" && (
+        <div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Add Function</div>
+            <form onSubmit={addFunction} style={{ display: "flex", gap: "10px", flexWrap: "wrap" as const }}>
+              <input style={{ ...S.input, flex: "2", minWidth: "150px" }} placeholder="Function name (e.g. Mehendi)" required
+                value={newFunction.name} onChange={e => setNewFunction(f => ({ ...f, name: e.target.value }))} />
+              <input style={{ ...S.input, flex: "1", minWidth: "130px" }} type="date" required
+                value={newFunction.date} onChange={e => setNewFunction(f => ({ ...f, date: e.target.value }))} />
+              <input style={{ ...S.input, flex: "1", minWidth: "100px" }} type="number" placeholder="Headcount" required
+                value={newFunction.headcount} onChange={e => setNewFunction(f => ({ ...f, headcount: e.target.value }))} />
+              <input style={{ ...S.input, flex: "2", minWidth: "150px" }} placeholder="Venue"
+                value={newFunction.venue} onChange={e => setNewFunction(f => ({ ...f, venue: e.target.value }))} />
+              <button type="submit" style={S.btn("primary")} disabled={saving}>Add</button>
+            </form>
+          </div>
+          {(wedding.weddingFunctions ?? []).map(fn => (
+            <div key={fn.id} style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontFamily: "Playfair Display, serif", fontSize: "1rem", fontWeight: 700, color: "var(--text)" }}>{fn.name}</div>
+                <div style={{ fontSize: "0.78rem", color: "var(--text)", opacity: 0.5, marginTop: "4px" }}>
+                  {new Date(fn.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
+                  {fn.venue && ` · ${fn.venue}`}
                 </div>
               </div>
-            ))
-          )}
+              <div style={{ textAlign: "right" as const }}>
+                <div style={{ fontFamily: "Playfair Display, serif", fontSize: "1.3rem", fontWeight: 700, color: "var(--gold)" }}>{fn.headcount}</div>
+                <div style={{ fontSize: "0.65rem", color: "var(--text)", opacity: 0.4, letterSpacing: "1px", textTransform: "uppercase" }}>pax</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* RFQs */}
-      {tab === "RFQs" && (
-        <div className="space-y-3">
-          {w.rfqs.length === 0 ? (
-            <p className="text-sm text-gray-400">No RFQs created yet.</p>
-          ) : (
-            w.rfqs.map((rfq: any) => (
-              <Link
-                key={rfq.id}
-                href={`/weddings/${w.id}/rfqs/${rfq.id}`}
-                className="block bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md hover:border-primary transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
-                      {rfq.category}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {rfq.quotes.length} quotes · {rfq.vendors.length} vendors invited
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      rfq.status === "CLOSED" ? "bg-green-100 text-green-700" :
-                      rfq.status === "OPEN"   ? "bg-blue-100 text-blue-700"  :
-                      "bg-gray-100 text-gray-500"
-                    }`}>{rfq.status}</span>
-                    <span className="text-primary text-sm">→</span>
-                  </div>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
+      {/* Design Tab */}
+      {activeTab === "Design" && (
+        <DesignStudio weddingId={wedding.id} pax={pax} />
       )}
     </div>
   );

@@ -1,170 +1,242 @@
 "use client";
-import { useSession, signOut } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-const STATUS_STYLE: Record<string, string> = {
-  INVITED:        "bg-yellow-100 text-yellow-700",
-  QUOTE_RECEIVED: "bg-blue-100 text-blue-700",
-  SELECTED:       "bg-green-100 text-green-700",
-  NOT_SELECTED:   "bg-gray-100 text-gray-500",
-  DECLINED:       "bg-red-100 text-red-500",
+interface RFQ {
+  id: string;
+  wedding: { coupleName: string; eventDate: string; venue?: string; };
+  status: string;
+  notes?: string;
+  createdAt: string;
+}
+interface Quote {
+  id: string;
+  rfq: { wedding: { coupleName: string; eventDate: string; }; };
+  amount: number;
+  perPax?: number;
+  notes?: string;
+  status: string;
+  createdAt: string;
+}
+
+function fmt(n: number) {
+  if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)}Cr`;
+  if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
+const S = {
+  hero: {
+    background: "linear-gradient(135deg, #2c1a0e 0%, #5a2d1a 55%, #b8832a 100%)",
+    borderRadius: "20px", padding: "40px 48px", marginBottom: "32px",
+  } as React.CSSProperties,
+  heroLabel: {
+    fontSize: "0.68rem", fontWeight: 700, letterSpacing: "2.5px",
+    textTransform: "uppercase" as const, color: "var(--gold2)", marginBottom: "10px",
+  },
+  heroTitle: {
+    fontFamily: "Playfair Display, serif", fontSize: "clamp(1.6rem,3vw,2.4rem)",
+    fontWeight: 700, color: "#fff", marginBottom: "8px",
+  } as React.CSSProperties,
+  heroSub: { color: "rgba(255,255,255,0.55)", fontSize: "0.875rem" } as React.CSSProperties,
+  readonlyBadge: {
+    display: "inline-block", background: "rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.7)",
+    fontSize: "0.62rem", fontWeight: 700, letterSpacing: "1.5px",
+    textTransform: "uppercase" as const, padding: "4px 12px",
+    borderRadius: "20px", marginTop: "16px",
+  } as React.CSSProperties,
+  grid: {
+    display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start",
+  } as React.CSSProperties,
+  sectionTitle: {
+    fontFamily: "Playfair Display, serif", fontSize: "1.1rem",
+    fontWeight: 700, color: "var(--text)", marginBottom: "16px",
+  } as React.CSSProperties,
+  card: {
+    background: "var(--surface)", border: "1px solid #e8d5b7",
+    borderRadius: "14px", padding: "20px", marginBottom: "14px",
+    boxShadow: "0 2px 8px #b8832a08",
+  } as React.CSSProperties,
+  cardTop: {
+    display: "flex", justifyContent: "space-between",
+    alignItems: "flex-start", marginBottom: "8px",
+  } as React.CSSProperties,
+  coupleName: {
+    fontFamily: "Playfair Display, serif", fontSize: "1rem",
+    fontWeight: 700, color: "var(--text)",
+  } as React.CSSProperties,
+  meta: {
+    fontSize: "0.75rem", color: "var(--text)",
+    opacity: 0.5, marginBottom: "4px",
+  } as React.CSSProperties,
+  pill: (c: string) => ({
+    fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.6px",
+    textTransform: "uppercase" as const, padding: "3px 10px",
+    borderRadius: "20px", background: c + "18", color: c,
+    border: `1px solid ${c}33`, display: "inline-block",
+  }),
+  amount: {
+    fontFamily: "Playfair Display, serif", fontSize: "1.2rem",
+    fontWeight: 700, color: "var(--gold)",
+  } as React.CSSProperties,
+  divider: { borderTop: "1px solid #f0e6d3", margin: "12px 0" } as React.CSSProperties,
+  notes: {
+    fontSize: "0.75rem", color: "var(--text)", opacity: 0.5,
+    fontStyle: "italic",
+  } as React.CSSProperties,
+  emptyState: {
+    textAlign: "center" as const, padding: "40px",
+    opacity: 0.35, fontSize: "0.875rem",
+  } as React.CSSProperties,
+  welcome: {
+    fontFamily: "Playfair Display, serif", fontSize: "1.5rem",
+    fontWeight: 700, color: "var(--text)", marginBottom: "4px",
+  } as React.CSSProperties,
+  welcomeSub: {
+    color: "var(--text)", opacity: 0.45,
+    fontSize: "0.85rem", marginBottom: "28px",
+  } as React.CSSProperties,
+  kpiRow: {
+    display: "flex", gap: "16px", marginBottom: "28px",
+    flexWrap: "wrap" as const,
+  } as React.CSSProperties,
+  kpi: {
+    background: "var(--surface)", border: "1px solid #e8d5b7",
+    borderRadius: "14px", padding: "18px 24px", flex: "1",
+    minWidth: "140px", boxShadow: "0 2px 8px #b8832a08",
+  } as React.CSSProperties,
+  kpiVal: {
+    fontFamily: "Playfair Display, serif", fontSize: "1.8rem",
+    fontWeight: 700, color: "var(--text)", lineHeight: 1, marginBottom: "4px",
+  } as React.CSSProperties,
+  kpiLabel: {
+    fontSize: "0.62rem", fontWeight: 700, letterSpacing: "1.2px",
+    textTransform: "uppercase" as const, color: "var(--gold)",
+  },
 };
 
-export default function VendorPortal() {
-  const { data: session } = useSession();
-  const vendorId = (session?.user as any)?.vendorId;
+function statusColor(s: string) {
+  const m: Record<string, string> = {
+    OPEN: "var(--rose)", QUOTED: "var(--gold)", ACCEPTED: "var(--ok)",
+    REJECTED: "var(--bad)", CLOSED: "var(--text)", PENDING: "var(--gold)",
+    SELECTED: "var(--ok)",
+  };
+  return m[s] ?? "var(--text)";
+}
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["vendor", vendorId],
-    queryFn: () => axios.get(`/api/vendors/${vendorId}`).then(r => r.data),
-    enabled: !!vendorId,
-  });
+export default function VendorPortalPage() {
+  const [rfqs, setRfqs] = useState<RFQ[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const v = data?.vendor;
+  useEffect(() => {
+    Promise.all([
+      axios.get("/api/portal/vendor/rfqs"),
+      axios.get("/api/portal/vendor/quotes"),
+    ]).then(([r, q]) => {
+      setRfqs(r.data ?? []);
+      setQuotes(q.data ?? []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
 
-  if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-400 text-sm animate-pulse">Loading your dashboard...</p>
+  if (loading) return (
+    <div style={{ textAlign: "center", padding: "80px", fontFamily: "Playfair Display, serif", color: "var(--gold)", fontSize: "1.2rem" }}>
+      Loading your vendor portal…
     </div>
   );
 
-  const wonQuotes = (v?.quotes ?? []).filter((q: any) => q.isWinner);
-  const activeRFQs = (v?.rfqInvites ?? []).filter((r: any) =>
-    r.status === "INVITED" || r.status === "QUOTE_RECEIVED"
-  );
+  const openRfqs = rfqs.filter(r => r.status === "OPEN").length;
+  const wonQuotes = quotes.filter(q => q.status === "SELECTED").length;
+  const totalQuoteValue = quotes.reduce((s, q) => s + (q.amount ?? 0), 0);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div>
+      <div style={S.welcome}>Vendor Portal</div>
+      <div style={S.welcomeSub}>Read-only view of your RFQs and submitted quotes — The Royal Knot.</div>
 
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <p className="text-xs tracking-widest text-secondary font-semibold uppercase">The Royal Knot</p>
-          <p className="text-xs text-gray-400 mt-0.5">Vendor portal</p>
+      {/* Hero */}
+      <div style={S.hero}>
+        <div style={S.heroLabel}>Vendor Dashboard</div>
+        <div style={S.heroTitle}>Your Active Pipeline</div>
+        <div style={S.heroSub}>
+          {rfqs.length} RFQ{rfqs.length !== 1 ? "s" : ""} received · {quotes.length} quote{quotes.length !== 1 ? "s" : ""} submitted
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="text-xs text-gray-400 hover:text-primary transition-colors"
-        >
-          Sign out
-        </button>
+        <div style={S.readonlyBadge}>🔒 Read-Only View</div>
       </div>
 
-      {/* Profile hero */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
-        <div className="flex items-start gap-5">
-          {/* Avatar initials */}
-          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shrink-0">
-            <span className="text-white text-xl font-bold">
-              {v?.name?.split(" ").map((w: string) => w[0]).slice(0,2).join("") ?? "V"}
-            </span>
-          </div>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-gray-900">{v?.name}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{v?.category?.name}</p>
-            <p className="text-xs text-gray-400 mt-1">{v?.contactPerson} · {v?.phone}</p>
-            {v?.rating && (
-              <p className="text-secondary font-semibold mt-2 text-sm">
-                {"★".repeat(v.rating)}{"☆".repeat(5 - v.rating)} ({v.rating}/5)
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      {/* KPIs */}
+      <div style={S.kpiRow}>
         {[
-          { label: "RFQ Invitations", value: v?.rfqInvites?.length ?? 0,  color: "text-gray-900" },
-          { label: "Active RFQs",     value: activeRFQs.length,            color: "text-blue-600" },
-          { label: "Contracts Won",   value: wonQuotes.length,             color: "text-green-600" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <p className="text-xs text-gray-400 mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${color}`}>{value}</p>
+          { label: "Open RFQs", val: openRfqs, color: "var(--rose)" },
+          { label: "Quotes Sent", val: quotes.length, color: "var(--gold)" },
+          { label: "Contracts Won", val: wonQuotes, color: "var(--ok)" },
+          { label: "Quote Value", val: totalQuoteValue ? fmt(totalQuoteValue) : "—", color: "var(--text)" },
+        ].map(k => (
+          <div key={k.label} style={S.kpi}>
+            <div style={{ ...S.kpiLabel, color: k.color }}>{k.label}</div>
+            <div style={{ ...S.kpiVal, color: k.color }}>{k.val}</div>
           </div>
         ))}
       </div>
 
-      {/* RFQ Invitations */}
-      <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-          RFQ Invitations
-        </h2>
-        {(v?.rfqInvites ?? []).length === 0 ? (
-          <p className="text-sm text-gray-400">No invitations yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {(v?.rfqInvites ?? []).map((inv: any) => (
-              <div key={inv.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{inv.rfq.category}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Invited {new Date(inv.invitedAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
-                    {inv.respondedAt && ` · Responded ${new Date(inv.respondedAt).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}`}
-                  </p>
-                </div>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[inv.status]}`}>
-                  {inv.status.replace("_"," ")}
-                </span>
+      <div style={S.grid}>
+        {/* RFQs */}
+        <div>
+          <div style={S.sectionTitle}>Requests for Quote ({rfqs.length})</div>
+          {rfqs.length === 0 && <div style={S.emptyState}>No RFQs received yet.</div>}
+          {rfqs.map(r => (
+            <div key={r.id} style={S.card}>
+              <div style={S.cardTop}>
+                <div style={S.coupleName}>{r.wedding.coupleName}</div>
+                <span style={S.pill(statusColor(r.status))}>{r.status}</span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quotes submitted */}
-      <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-          Quotes Submitted
-        </h2>
-        {(v?.quotes ?? []).length === 0 ? (
-          <p className="text-sm text-gray-400">No quotes submitted yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {(v?.quotes ?? []).map((q: any) => (
-              <div key={q.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{q.rfq.category}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(q.submittedAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
-                  </p>
-                  {q.notes && <p className="text-xs text-gray-500 mt-0.5">{q.notes}</p>}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">
-                    ₹{Number(q.totalAmount).toLocaleString("en-IN")}
-                  </p>
-                  {q.effectiveCostPax && (
-                    <p className="text-xs text-gray-400">₹{Number(q.effectiveCostPax).toLocaleString("en-IN")}/pax</p>
-                  )}
-                  {q.isWinner
-                    ? <span className="text-xs font-bold text-green-600">✓ Won</span>
-                    : <span className="text-xs text-gray-400">Not selected</span>
-                  }
-                </div>
+              <div style={S.meta}>
+                📅 {new Date(r.wedding.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Won contracts */}
-      {wonQuotes.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-          <h2 className="text-sm font-semibold text-green-800 uppercase tracking-wide mb-3">
-            ✓ Active Contracts
-          </h2>
-          {wonQuotes.map((q: any) => (
-            <div key={q.id} className="flex items-center justify-between">
-              <p className="text-sm text-green-800 font-medium">{q.rfq.category}</p>
-              <p className="font-bold text-green-700">₹{Number(q.totalAmount).toLocaleString("en-IN")}</p>
+              {r.wedding.venue && <div style={S.meta}>📍 {r.wedding.venue}</div>}
+              {r.notes && (
+                <>
+                  <div style={S.divider} />
+                  <div style={S.notes}>{r.notes}</div>
+                </>
+              )}
+              <div style={{ fontSize: "0.65rem", color: "var(--text)", opacity: 0.35, marginTop: "10px" }}>
+                Received {new Date(r.createdAt).toLocaleDateString("en-IN")}
+              </div>
             </div>
           ))}
         </div>
-      )}
 
+        {/* Quotes */}
+        <div>
+          <div style={S.sectionTitle}>Your Quotes ({quotes.length})</div>
+          {quotes.length === 0 && <div style={S.emptyState}>No quotes submitted yet.</div>}
+          {quotes.map(q => (
+            <div key={q.id} style={S.card}>
+              <div style={S.cardTop}>
+                <div style={S.coupleName}>{q.rfq.wedding.coupleName}</div>
+                <span style={S.pill(statusColor(q.status))}>{q.status}</span>
+              </div>
+              <div style={S.meta}>
+                📅 {new Date(q.rfq.wedding.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </div>
+              <div style={S.divider} />
+              <div style={S.amount}>{fmt(q.amount)}</div>
+              {q.perPax && (
+                <div style={{ fontSize: "0.72rem", color: "var(--gold)", opacity: 0.8, marginTop: "2px" }}>
+                  {fmt(q.perPax)} / pax
+                </div>
+              )}
+              {q.notes && <div style={{ ...S.notes, marginTop: "8px" }}>{q.notes}</div>}
+              <div style={{ fontSize: "0.65rem", color: "var(--text)", opacity: 0.35, marginTop: "10px" }}>
+                Submitted {new Date(q.createdAt).toLocaleDateString("en-IN")}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
